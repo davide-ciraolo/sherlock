@@ -1,21 +1,27 @@
 import { mkdir, writeFile, readFile } from "node:fs/promises";
 import path from "node:path";
 import { loadConfig } from "../config.js";
-
-function flag(args, name) {
-  const i = args.indexOf(name);
-  return i >= 0 ? args[i + 1] : undefined;
-}
+import { flag } from "../args.js";
 
 function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export async function cmdScaffold({ cwd, args, stdout }) {
+export async function cmdScaffold({ cwd, args, stdout, stderr }) {
   const config = await loadConfig(cwd);
   const date = flag(args, "--date") || today();
   const out = flag(args, "--out") || config.output;
-  const { units } = JSON.parse(await readFile(path.join(cwd, config.stateDir, "units.json"), "utf8"));
+
+  let units;
+  try {
+    ({ units } = JSON.parse(await readFile(path.join(cwd, config.stateDir, "units.json"), "utf8")));
+  } catch (e) {
+    if (e.code === "ENOENT") {
+      stderr.write(`scaffold: ${config.stateDir}/units.json not found — run 'partition' first\n`);
+      return 1;
+    }
+    throw e;
+  }
 
   const dir = path.join(cwd, out, `${date}-codebase-review`);
   await mkdir(dir, { recursive: true });

@@ -2130,3 +2130,32 @@ git commit -m "chore(sherlock): furiosa project overlay config for the review ca
   used identically across partition, scaffold, coverage, lenses, workflow, and schemas.
 - **Known cross-task dependency:** the `cli lenses` assertion in Task 12 intentionally
   goes green only after Task 13 — called out in both tasks.
+
+---
+
+## Post-build refinements (final-review follow-ups)
+
+After the 17 tasks landed (31 tests green), a whole-implementation review surfaced
+three improvements, applied as follow-up commits. The **source files are the
+authoritative version**; Task 6's code block above already reflects FU1.
+
+- **FU1 — oversized-unit bin-packing** (`src/commands/partition.js`): the original
+  "split oversized group by a deeper segment" was a no-op because every file in a
+  group already shares one directory. Replaced with `unitsForGroup(...)` that
+  bin-packs an over-`maxUnitLoc` directory's sorted file list into `<kebab>-1`,
+  `<kebab>-2`, … sub-units (a single over-cap file lands alone). On furiosa this
+  took the partition from ~10 oversized units to **0** (78 units total). New test
+  covers the split branch.
+- **FU2 — verdict schema alignment** (`schemas/verdict.schema.json`): dropped
+  `finding_id` from `required` so the shipped schema matches the workflow's inline
+  `VERDICT` (`{verdict, reason}`); `finding_id` stays an optional property. Test
+  asserts `required === ["verdict","reason"]`.
+- **FU3 — robustness + DRY**: extracted the duplicated `flag()` into `src/args.js`
+  (imported by scaffold/coverage/lenses); `scaffold` and `coverage` now return a
+  friendly "run 'partition'/'scaffold' first" message + exit 1 on a missing state
+  file instead of a raw stack; `coverage` resolves `--findings` via
+  `path.resolve(cwd, …)` for symmetry with scaffold's `--out`. New tests for each.
+
+Final state: **35 tests, 0 fail.** Remaining accepted limitation: `kebab()` is a lossy
+path→slug map, so a root dir literally named `a-b` could collide with `a/b` — not
+introduced by these changes and not present in realistic layouts.

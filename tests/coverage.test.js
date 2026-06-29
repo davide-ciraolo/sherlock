@@ -29,3 +29,14 @@ test("coverage fails on a missing unit and an error unit", async () => {
   assert.ok(err.includes("u2"));
   assert.ok(err.includes("u1"));
 });
+
+test("coverage errors clearly when units.json is missing", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "sherlock-cov-miss-"));
+  const dir = path.join(root, "report");
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, "units-status.json"), JSON.stringify({ units: {} }));
+  let err = "";
+  const code = await cmdCoverage({ cwd: root, args: ["--findings", dir], stdout: { write() {} }, stderr: { write: (s) => (err += s) } });
+  assert.equal(code, 1);
+  assert.ok(/units\.json|partition/i.test(err), "should mention units.json / partition");
+});

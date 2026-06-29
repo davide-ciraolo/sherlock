@@ -27,3 +27,11 @@ test("scaffold creates report skeleton + seeded coverage table", async () => {
   assert.ok(coverage.includes("api-src-auth"));
   assert.ok(coverage.includes("| S |"));
 });
+
+test("scaffold errors clearly when units.json is missing", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "sherlock-scaf-miss-"));
+  let err = "";
+  const code = await cmdScaffold({ cwd: root, args: ["--date", "2026-06-29"], stdout: { write() {} }, stderr: { write: (s) => (err += s) } });
+  assert.equal(code, 1);
+  assert.ok(/units\.json|partition/i.test(err), "should mention units.json / partition");
+});

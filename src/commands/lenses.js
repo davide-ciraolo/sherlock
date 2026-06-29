@@ -1,13 +1,9 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { listLenses, validateLens, resolveSelection } from "../lenses.js";
+import { flag } from "../args.js";
 
 const skillRoot = path.dirname(path.dirname(path.dirname(fileURLToPath(import.meta.url))));
-
-function flag(args, name) {
-  const i = args.indexOf(name);
-  return i >= 0 ? args[i + 1] : undefined;
-}
 
 export async function cmdLenses({ args, stdout, stderr }) {
   const lenses = await listLenses(path.join(skillRoot, "lenses"));

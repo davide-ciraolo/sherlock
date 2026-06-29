@@ -1,21 +1,36 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { loadConfig } from "../config.js";
+import { flag } from "../args.js";
 
-function flag(args, name) {
-  const i = args.indexOf(name);
-  return i >= 0 ? args[i + 1] : undefined;
+async function readJson(file, label, stderr) {
+  try {
+    return JSON.parse(await readFile(file, "utf8"));
+  } catch (e) {
+    if (e.code === "ENOENT") {
+      stderr.write(`coverage: ${label} not found at ${file}\n`);
+      return null;
+    }
+    throw e;
+  }
 }
 
 export async function cmdCoverage({ cwd, args, stdout, stderr }) {
   const config = await loadConfig(cwd);
-  const findingsDir = flag(args, "--findings");
-  if (!findingsDir) {
+  const findingsArg = flag(args, "--findings");
+  if (!findingsArg) {
     stderr.write("coverage: --findings <report-dir> required\n");
     return 1;
   }
-  const { units } = JSON.parse(await readFile(path.join(cwd, config.stateDir, "units.json"), "utf8"));
-  const status = JSON.parse(await readFile(path.join(findingsDir, "units-status.json"), "utf8")).units || {};
+  const findingsDir = path.resolve(cwd, findingsArg);
+
+  const unitsDoc = await readJson(path.join(cwd, config.stateDir, "units.json"), "units.json (run 'partition' first)", stderr);
+  if (!unitsDoc) return 1;
+  const statusDoc = await readJson(path.join(findingsDir, "units-status.json"), "units-status.json (run 'scaffold' first)", stderr);
+  if (!statusDoc) return 1;
+
+  const units = unitsDoc.units;
+  const status = statusDoc.units || {};
 
   const gaps = [];
   for (const u of units) {
