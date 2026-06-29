@@ -929,7 +929,7 @@ export const LENS_ALIASES = { bugs: "correctness", bug: "correctness", dead: "de
 const VALID_CLASSES = new Set(["security", "correctness", "cleanup"]);
 
 function parseFrontmatter(text) {
-  const m = text.match(/^---\n([\s\S]*?)\n---/);
+  const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!m) return null;
   return yaml.load(m[1]) || {};
 }
