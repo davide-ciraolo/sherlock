@@ -29,3 +29,23 @@ test("partition writes units.json with tiers + loc, deterministic", async () => 
   assert.ok(auth.loc >= 10);
   assert.deepEqual(units.units.map((u) => u.id).slice().sort(), units.units.map((u) => u.id));
 });
+
+test("oversized single-directory group is bin-packed into multiple units with unique ids", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "sherlock-part2-"));
+  await mkdir(path.join(root, "agents/src"), { recursive: true });
+  await writeFile(path.join(root, "agents/src/a.ts"), "x\n".repeat(40));
+  await writeFile(path.join(root, "agents/src/b.ts"), "x\n".repeat(40));
+  await writeFile(path.join(root, "agents/src/c.ts"), "x\n".repeat(40));
+  await writeFile(
+    path.join(root, "sherlock.config.yml"),
+    'maxUnitLoc: 80\ninclude:\n  - "**/*.ts"\ntiers:\n  S: []\n  A: []\n  B:\n    - "**"\n',
+  );
+  const code = await cmdPartition({ cwd: root, args: [], stdout: { write() {} }, stderr: { write() {} } });
+  assert.equal(code, 0);
+  const units = JSON.parse(await readFile(path.join(root, ".sherlock/units.json"), "utf8")).units;
+  const agentsUnits = units.filter((u) => u.path === "agents/src");
+  assert.ok(agentsUnits.length >= 2, "oversized dir should split into >=2 units");
+  for (const u of agentsUnits) assert.ok(u.loc <= 80 || u.files.length === 1, "each chunk under cap (or a single file)");
+  const ids = units.map((u) => u.id);
+  assert.equal(new Set(ids).size, ids.length, "unit ids must be unique");
+});
