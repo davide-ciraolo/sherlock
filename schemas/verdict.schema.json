@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["finding_id", "verdict", "reason"],
+  "properties": {
+    "finding_id": { "type": "string" },
+    "verdict": { "type": "string", "enum": ["confirmed", "uncertain", "refuted"] },
+    "reason": { "type": "string" }
+  }
+}

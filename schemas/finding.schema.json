@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "lens", "severity", "file", "line", "excerpt", "rationale", "recommendation"],
+  "properties": {
+    "id": { "type": "string" },
+    "lens": { "type": "string" },
+    "severity": { "type": "string", "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"] },
+    "file": { "type": "string" },
+    "line": { "type": "integer" },
+    "excerpt": { "type": "string" },
+    "rationale": { "type": "string" },
+    "rule": { "type": "string" },
+    "recommendation": { "type": "string" }
+  }
+}

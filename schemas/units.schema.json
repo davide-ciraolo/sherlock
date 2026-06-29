@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["units"],
+  "properties": {
+    "units": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "path", "tier", "files", "loc"],
+        "properties": {
+          "id": { "type": "string" },
+          "path": { "type": "string" },
+          "tier": { "type": "string", "enum": ["S", "A", "B"] },
+          "files": { "type": "array", "items": { "type": "string" } },
+          "loc": { "type": "integer" }
+        }
+      }
+    }
+  }
+}
