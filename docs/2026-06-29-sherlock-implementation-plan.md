@@ -1369,6 +1369,8 @@ git commit -m "feat(sherlock): wire bin/cli.js dispatcher"
 - Create: `.claude/skills/sherlock/lenses/refactor.md`
 - Test: `.claude/skills/sherlock/tests/shipped-lenses.test.js`
 
+> **Frontmatter placement (load-bearing):** `parseFrontmatter` matches `/^---\r?\n.../`, so the YAML frontmatter MUST begin at byte 0 of each lens file. The `<!-- lenses/<name>.md -->` label below is a doc annotation only — when authoring the real files, put the `---` frontmatter first and move any such comment into the body (after the closing `---`), or omit it. A comment on line 1 makes the lens silently unparseable.
+
 - [ ] **Step 1: Write the failing test**
 
 ```javascript
