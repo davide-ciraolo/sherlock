@@ -1211,7 +1211,7 @@ Expected: FAIL — `ENOENT` on `schemas/finding.schema.json`.
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "required": ["finding_id", "verdict", "reason"],
+  "required": ["verdict", "reason"],
   "properties": {
     "finding_id": { "type": "string" },
     "verdict": { "type": "string", "enum": ["confirmed", "uncertain", "refuted"] },

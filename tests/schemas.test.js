@@ -14,6 +14,8 @@ test("schemas are valid JSON Schema with required props", async () => {
   }
   const verdict = JSON.parse(await readFile(path.join(root, "schemas/verdict.schema.json"), "utf8"));
   assert.deepEqual(verdict.properties.verdict.enum, ["confirmed", "uncertain", "refuted"]);
+  // `required` must match the workflow's inline VERDICT (verdict + reason only); finding_id is optional.
+  assert.deepEqual(verdict.required, ["verdict", "reason"]);
   const units = JSON.parse(await readFile(path.join(root, "schemas/units.schema.json"), "utf8"));
   assert.ok(units.properties.units);
 });
