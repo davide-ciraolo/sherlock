@@ -1,0 +1,44 @@
+#!/usr/bin/env node
+import { cmdPartition } from "../src/commands/partition.js";
+import { cmdScaffold } from "../src/commands/scaffold.js";
+import { cmdCoverage } from "../src/commands/coverage.js";
+import { cmdLenses } from "../src/commands/lenses.js";
+import { cmdRules } from "../src/commands/rules.js";
+
+const HELP = `sherlock — code-investigation skill
+
+Commands:
+  partition [path-or-glob]        walk repo → risk-tiered units.json
+  scaffold [--date YYYY-MM-DD] [--out <dir>]   create report skeleton + coverage table
+  coverage --findings <report-dir>             reconcile units vs recorded status (exit 1 on gap)
+  lenses [--select security,bugs,...]          list / resolve investigators
+  rules                            print resolved standard + project rule context
+
+Examples:
+  node .claude/skills/sherlock/bin/cli.js partition
+  node .claude/skills/sherlock/bin/cli.js lenses --select security,bugs
+`;
+
+const HANDLERS = { partition: cmdPartition, scaffold: cmdScaffold, coverage: cmdCoverage, lenses: cmdLenses, rules: cmdRules };
+
+async function main() {
+  const [, , cmd, ...rest] = process.argv;
+  if (!cmd || cmd === "--help" || cmd === "-h") {
+    process.stdout.write(HELP);
+    process.exit(0);
+  }
+  const handler = HANDLERS[cmd];
+  if (!handler) {
+    process.stderr.write(`unknown command: ${cmd}\n\n${HELP}`);
+    process.exit(1);
+  }
+  try {
+    const code = await handler({ cwd: process.cwd(), args: rest, stdin: process.stdin, stdout: process.stdout, stderr: process.stderr });
+    process.exit(code ?? 0);
+  } catch (e) {
+    process.stderr.write(`fatal: ${e.stack || e.message}\n`);
+    process.exit(1);
+  }
+}
+
+main();

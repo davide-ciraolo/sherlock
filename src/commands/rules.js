@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 import { loadConfig } from "../config.js";
 import { resolveRules } from "../rules.js";
 
-const skillRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const skillRoot = path.dirname(path.dirname(path.dirname(fileURLToPath(import.meta.url))));
 
 export async function cmdRules({ cwd, stdout }) {
   const config = await loadConfig(cwd);

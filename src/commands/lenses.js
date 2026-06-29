@@ -2,7 +2,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { listLenses, validateLens, resolveSelection } from "../lenses.js";
 
-const skillRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const skillRoot = path.dirname(path.dirname(path.dirname(fileURLToPath(import.meta.url))));
 
 function flag(args, name) {
   const i = args.indexOf(name);
