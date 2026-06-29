@@ -573,8 +573,7 @@ Expected: FAIL — cannot find module `../src/commands/partition.js`.
 
 ```javascript
 // src/commands/partition.js
-import { mkdir, writeFile } from "node:fs/promises";
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { loadConfig } from "../config.js";
 import { walkFiles } from "../glob.js";
@@ -595,14 +594,15 @@ export async function cmdPartition({ cwd, args, stdout }) {
   const include = scope ? [scope.endsWith("/") ? `${scope}**` : scope] : config.include;
   const files = await walkFiles(cwd, { include, exclude: config.exclude });
 
-  // group by top-2 segments
+  // group by full directory path; oversized groups are split by top-3 segment below
+  const texts = await Promise.all(files.map((f) => readFile(f.abs, "utf8").catch(() => "")));
   const groups = new Map();
-  for (const f of files) {
-    const text = await readFile(f.abs, "utf8").catch(() => "");
-    const key = groupKey(f.rel, 2);
+  files.forEach((f, i) => {
+    const parts = f.rel.split("/");
+    const key = parts.slice(0, parts.length - 1).join("/") || ".";
     if (!groups.has(key)) groups.set(key, []);
-    groups.get(key).push({ rel: f.rel, loc: countLines(text), tier: assignTier(f.rel, config.tiers) });
-  }
+    groups.get(key).push({ rel: f.rel, loc: countLines(texts[i]), tier: assignTier(f.rel, config.tiers) });
+  });
 
   // split oversized groups by next-deeper segment
   const units = [];
