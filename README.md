@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="assets/logo.png" alt="" width="360" /><br/>
+  <img src="assets/logo.png" alt="" width="180" /><br/>
   sherlock
 </h1>
 
