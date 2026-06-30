@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtemp, mkdir, writeFile, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { cmdScaffold } from "../src/commands/scaffold.js";
+import { cmdInit } from "../src/commands/init.js";
 
 async function withUnits() {
   const root = await mkdtemp(path.join(tmpdir(), "sherlock-scaf-"));
@@ -17,7 +17,7 @@ async function withUnits() {
 
 test("scaffold creates persona report skeleton + seeded coverage table", async () => {
   const root = await withUnits();
-  const code = await cmdScaffold({ cwd: root, args: ["--date", "2026-06-29"], stdout: { write() {} }, stderr: { write() {} } });
+  const code = await cmdInit({ cwd: root, args: ["--date", "2026-06-29"], stdout: { write() {} }, stderr: { write() {} } });
   assert.equal(code, 0);
   const dir = path.join(root, "docs/reviews/2026-06-29-codebase-review");
   for (const f of ["INVESTIGATION.md", "findings-security.md", "findings-bugs.md", "findings-cleanup.md", "appendix-refuted.md", "coverage.md", "units-status.json"]) {
@@ -44,7 +44,7 @@ test("scaffold creates persona report skeleton + seeded coverage table", async (
 test("scaffold errors clearly when units.json is missing", async () => {
   const root = await mkdtemp(path.join(tmpdir(), "sherlock-scaf-miss-"));
   let err = "";
-  const code = await cmdScaffold({ cwd: root, args: ["--date", "2026-06-29"], stdout: { write() {} }, stderr: { write: (s) => (err += s) } });
+  const code = await cmdInit({ cwd: root, args: ["--date", "2026-06-29"], stdout: { write() {} }, stderr: { write: (s) => (err += s) } });
   assert.equal(code, 1);
   assert.ok(/units\.json|partition/i.test(err), "should mention units.json / partition");
 });

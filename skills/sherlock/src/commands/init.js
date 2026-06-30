@@ -7,7 +7,7 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export async function cmdScaffold({ cwd, args, stdout, stderr }) {
+export async function cmdInit({ cwd, args, stdout, stderr }) {
   const config = await loadConfig(cwd);
   const date = flag(args, "--date") || today();
   const out = flag(args, "--out") || config.output;
@@ -17,7 +17,7 @@ export async function cmdScaffold({ cwd, args, stdout, stderr }) {
     ({ units } = JSON.parse(await readFile(path.join(cwd, config.stateDir, "units.json"), "utf8")));
   } catch (e) {
     if (e.code === "ENOENT") {
-      stderr.write(`scaffold: ${config.stateDir}/units.json not found — run 'partition' first\n`);
+      stderr.write(`init: ${config.stateDir}/units.json not found — run 'partition' first\n`);
       return 1;
     }
     throw e;
@@ -47,6 +47,6 @@ export async function cmdScaffold({ cwd, args, stdout, stderr }) {
   await writeFile(path.join(dir, "coverage.md"), coverage);
   await writeFile(path.join(dir, "units-status.json"), JSON.stringify({ units: {} }, null, 2));
 
-  stdout.write(`scaffolded report at ${path.relative(cwd, dir)}\n`);
+  stdout.write(`initialized report at ${path.relative(cwd, dir)}\n`);
   return 0;
 }

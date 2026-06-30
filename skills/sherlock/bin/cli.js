@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { cmdPartition } from "../src/commands/partition.js";
-import { cmdScaffold } from "../src/commands/scaffold.js";
+import { cmdInit } from "../src/commands/init.js";
 import { cmdCoverage } from "../src/commands/coverage.js";
 import { cmdLenses } from "../src/commands/lenses.js";
 import { cmdRules } from "../src/commands/rules.js";
@@ -9,7 +9,7 @@ const HELP = `sherlock — code-investigation skill
 
 Commands:
   partition [path-or-glob]        walk repo → risk-tiered units.json
-  scaffold [--date YYYY-MM-DD] [--out <dir>]   create report skeleton + coverage table
+  init [--date YYYY-MM-DD] [--out <dir>] [path]   create report skeleton + coverage table
   coverage --findings <report-dir>             reconcile units vs recorded status (exit 1 on gap)
   lenses [--select security,bugs,...]          list / resolve investigators
   rules                            print resolved standard + project rule context
@@ -19,7 +19,7 @@ Examples:
   node \${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js lenses --select security,bugs
 `;
 
-const HANDLERS = { partition: cmdPartition, scaffold: cmdScaffold, coverage: cmdCoverage, lenses: cmdLenses, rules: cmdRules };
+const HANDLERS = { partition: cmdPartition, init: cmdInit, coverage: cmdCoverage, lenses: cmdLenses, rules: cmdRules };
 
 async function main() {
   const [, , cmd, ...rest] = process.argv;

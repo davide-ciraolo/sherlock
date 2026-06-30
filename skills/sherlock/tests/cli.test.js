@@ -10,7 +10,7 @@ const cli = path.join(path.dirname(path.dirname(fileURLToPath(import.meta.url)))
 
 test("cli --help lists commands", async () => {
   const { stdout } = await run("node", [cli, "--help"]);
-  for (const c of ["partition", "scaffold", "coverage", "lenses", "rules"]) assert.ok(stdout.includes(c));
+  for (const c of ["partition", "init", "coverage", "lenses", "rules"]) assert.ok(stdout.includes(c));
 });
 
 test("cli unknown command exits non-zero", async () => {

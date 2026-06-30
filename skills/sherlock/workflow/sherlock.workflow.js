@@ -23,7 +23,7 @@ phase('Partition')
 log('Sherlock: partitioning + scaffolding (deterministic CLI)')
 // The orchestrator (you) runs these Bash steps before/within the workflow:
 //   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js partition <scope>
-//   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js scaffold --date <date>
+//   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js init --date <date>
 //   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js rules        (resolve rule context)
 //   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js lenses --select <lenses>
 // units.json, the resolved lens set, and the rule context are passed via args.
