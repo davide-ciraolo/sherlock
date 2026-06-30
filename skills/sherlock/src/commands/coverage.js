@@ -28,7 +28,7 @@ export async function cmdCoverage({ cwd, args, stdout, stderr }) {
   const unitsPath = unitsArg ? path.resolve(cwd, unitsArg) : path.join(cwd, config.stateDir, "units.json");
   const unitsDoc = await readJson(unitsPath, "units file (run 'partition' first)", stderr);
   if (!unitsDoc) return 1;
-  const statusDoc = await readJson(path.join(findingsDir, "units-status.json"), "units-status.json (run 'scaffold' first)", stderr);
+  const statusDoc = await readJson(path.join(findingsDir, "units-status.json"), "units-status.json (run 'init' first)", stderr);
   if (!statusDoc) return 1;
 
   const units = unitsDoc.units;

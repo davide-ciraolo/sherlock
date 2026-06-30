@@ -9,7 +9,7 @@ import { cmdInvestigate } from "../src/commands/investigate.js";
 const HELP = `sherlock — code-investigation skill
 
 Commands:
-  investigate [path] [--mode m] [--lenses l] [--tiers strict|all] [--refresh]   prep + recommend + plan
+  investigate [path-or-glob] [--mode m] [--lenses l] [--tiers strict|all] [--refresh]   prep + recommend + plan
   partition [path-or-glob]        walk repo → risk-tiered units.json
   init [--date YYYY-MM-DD] [--out <dir>] [path]   create report skeleton + coverage table
   coverage --findings <report-dir>             reconcile units vs recorded status (exit 1 on gap)

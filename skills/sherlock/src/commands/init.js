@@ -3,10 +3,7 @@ import path from "node:path";
 import { loadConfig } from "../config.js";
 import { flag, scopeArg } from "../args.js";
 import { unitsFileName, reportDirName } from "../paths.js";
-
-function today() {
-  return new Date().toISOString().slice(0, 10);
-}
+import { today } from "../clock.js";
 
 export async function cmdInit({ cwd, args, stdout, stderr }) {
   const config = await loadConfig(cwd);

@@ -3,18 +3,15 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { loadConfig } from "../config.js";
 import { flag, scopeArg } from "../args.js";
-import { unitsFileName, reportDirName } from "../paths.js";
+import { unitsFileName, reportDirName, toPosix } from "../paths.js";
 import { recommendMode } from "../recommend.js";
 import { listLenses } from "../lenses.js";
 import { cmdPartition } from "./partition.js";
 import { cmdInit } from "./init.js";
+import { today } from "../clock.js";
 
 const skillRoot = path.dirname(path.dirname(path.dirname(fileURLToPath(import.meta.url))));
 const NULL_SINK = { write() {} };
-
-function today() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 async function exists(p) {
   try {
@@ -35,10 +32,12 @@ export async function cmdInvestigate({ cwd, args, stdout, stderr }) {
   const tiers = flag(args, "--tiers");
   const refresh = args.includes("--refresh");
 
-  const unitsRel = path.join(config.stateDir, unitsFileName(scope));
-  const unitsPath = path.join(cwd, unitsRel);
-  const reportRel = path.join(out, reportDirName(date, scope));
-  const reportDir = path.join(cwd, reportRel);
+  const unitsRelNative = path.join(config.stateDir, unitsFileName(scope));
+  const unitsPath = path.join(cwd, unitsRelNative);
+  const unitsRel = toPosix(unitsRelNative);
+  const reportRelNative = path.join(out, reportDirName(date, scope));
+  const reportDir = path.join(cwd, reportRelNative);
+  const reportRel = toPosix(reportRelNative);
 
   // --- reuse-first prep ---
   let reused = false;

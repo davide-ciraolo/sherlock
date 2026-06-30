@@ -51,7 +51,7 @@ test("investigate scoped run is keyed and emits --units in the coverage command"
   assert.equal(code, 0);
   await access(path.join(root, ".sherlock/units-src.json"));
   await access(path.join(root, "docs/reviews/2026-06-30-src-review/INVESTIGATION.md"));
-  assert.ok(sink.out.includes("--units " + path.join(".sherlock", "units-src.json")));
+  assert.ok(sink.out.includes("--units .sherlock/units-src.json"));
 });
 
 test("investigate echoes provided --mode instead of asking", async () => {

@@ -4,5 +4,5 @@ export function flag(args, name) {
 }
 
 export function scopeArg(args) {
-  return args.find((a, i) => !a.startsWith("--") && (i === 0 || !args[i - 1].startsWith("--")));
+  return args.length && !args[0].startsWith("--") ? args[0] : undefined;
 }
