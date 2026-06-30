@@ -40,3 +40,19 @@ test("coverage errors clearly when units.json is missing", async () => {
   assert.equal(code, 1);
   assert.ok(/units\.json|partition/i.test(err), "should mention units.json / partition");
 });
+
+test("coverage reads a scope-keyed units file via --units", async () => {
+  const root = await mkdtemp(path.join(tmpdir(), "sherlock-cov-units-"));
+  await mkdir(path.join(root, ".sherlock"), { recursive: true });
+  await writeFile(path.join(root, ".sherlock/units-api.json"), JSON.stringify({ units: [{ id: "a1" }] }));
+  const dir = path.join(root, "report");
+  await mkdir(dir, { recursive: true });
+  await writeFile(path.join(dir, "units-status.json"), JSON.stringify({ units: { a1: { status: "done" } } }));
+  const code = await cmdCoverage({
+    cwd: root,
+    args: ["--findings", dir, "--units", ".sherlock/units-api.json"],
+    stdout: { write() {} },
+    stderr: { write() {} },
+  });
+  assert.equal(code, 0);
+});

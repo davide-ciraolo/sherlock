@@ -49,3 +49,14 @@ test("oversized single-directory group is bin-packed into multiple units with un
   const ids = units.map((u) => u.id);
   assert.equal(new Set(ids).size, ids.length, "unit ids must be unique");
 });
+
+test("scoped partition writes a scope-keyed units file", async () => {
+  const root = await repo();
+  const code = await cmdPartition({ cwd: root, args: ["api/**"], stdout: { write() {} }, stderr: { write() {} } });
+  assert.equal(code, 0);
+  // scoped file exists, keyed by kebab("api/**") === "api"
+  const scoped = JSON.parse(await readFile(path.join(root, ".sherlock/units-api.json"), "utf8"));
+  assert.ok(scoped.units.length >= 1);
+  // the bare units.json must NOT be created by a scoped run
+  await assert.rejects(readFile(path.join(root, ".sherlock/units.json"), "utf8"), /ENOENT/);
+});

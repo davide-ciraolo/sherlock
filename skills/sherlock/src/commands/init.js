@@ -1,29 +1,30 @@
 import { mkdir, writeFile, readFile } from "node:fs/promises";
 import path from "node:path";
 import { loadConfig } from "../config.js";
-import { flag } from "../args.js";
+import { flag, scopeArg } from "../args.js";
+import { unitsFileName, reportDirName } from "../paths.js";
+import { today } from "../clock.js";
 
-function today() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-export async function cmdScaffold({ cwd, args, stdout, stderr }) {
+export async function cmdInit({ cwd, args, stdout, stderr }) {
   const config = await loadConfig(cwd);
   const date = flag(args, "--date") || today();
   const out = flag(args, "--out") || config.output;
 
+  const scope = scopeArg(args);
+
+  const unitsFile = unitsFileName(scope);
   let units;
   try {
-    ({ units } = JSON.parse(await readFile(path.join(cwd, config.stateDir, "units.json"), "utf8")));
+    ({ units } = JSON.parse(await readFile(path.join(cwd, config.stateDir, unitsFile), "utf8")));
   } catch (e) {
     if (e.code === "ENOENT") {
-      stderr.write(`scaffold: ${config.stateDir}/units.json not found — run 'partition' first\n`);
+      stderr.write(`init: ${config.stateDir}/${unitsFile} not found — run 'partition${scope ? " " + scope : ""}' first\n`);
       return 1;
     }
     throw e;
   }
 
-  const dir = path.join(cwd, out, `${date}-codebase-review`);
+  const dir = path.join(cwd, out, reportDirName(date, scope));
   await mkdir(dir, { recursive: true });
 
   const rows = units
@@ -47,6 +48,6 @@ export async function cmdScaffold({ cwd, args, stdout, stderr }) {
   await writeFile(path.join(dir, "coverage.md"), coverage);
   await writeFile(path.join(dir, "units-status.json"), JSON.stringify({ units: {} }, null, 2));
 
-  stdout.write(`scaffolded report at ${path.relative(cwd, dir)}\n`);
+  stdout.write(`initialized report at ${path.relative(cwd, dir)}\n`);
   return 0;
 }

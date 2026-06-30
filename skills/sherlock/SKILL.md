@@ -7,41 +7,64 @@ description: Use when the user wants a structured, full or scoped code review/au
 
 Sherlock reviews a codebase through perspective **lenses** (security, correctness,
 dead-code, comments, refactor), **adversarially verifies** every finding, and writes
-a **triaged report** under `docs/reviews/`. It changes no code.
+a **triaged report** (`INVESTIGATION.md` + per-lens case-files) under `docs/reviews/`.
+It changes no code.
 
-> **Opt-in / token-intensive.** The review runs as multi-agent orchestration
-> (one reviewer per unit × lens, plus per-finding verifiers). Confirm scope with the
-> user before launching a full-repo run.
+> **Opt-in / token-intensive.** The review can run as multi-agent orchestration.
+> Confirm scope and execution mode with the user before launching a full-repo run.
 
 ## Procedure
 
-1. **Partition + scaffold (deterministic CLI):**
+1. **Prep + recommend (deterministic CLI):**
    ```bash
-   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js partition [path-or-glob]
-   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js scaffold
-   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js rules
-   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js lenses [--select security,bugs,...]
+   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js investigate [path-or-glob] [--mode …] [--lenses …] [--tiers strict|all] [--refresh]
    ```
-   Read `.sherlock/units.json` and the resolved lens + rule context.
-2. **Run the workflow** `${CLAUDE_PLUGIN_ROOT}/skills/sherlock/workflow/sherlock.workflow.js` via the Workflow tool,
-   passing `{ units, lenses, rules, date }` as `args`. It fans out reviewers,
-   adversarially verifies, and returns `{ kept, refuted, summary }`.
-3. **Write results** into the scaffolded report files, following the persona style
-   guide [`report-style.md`](persona/report-style.md): the synthesized `summary` becomes
-   `INVESTIGATION.md` (🗂️ The Brief → 🧾 Evidence ledger → ⚖️ The Verdict); write each
-   kept finding as a case-file (Observation → 🧠 Deduction → ⚖️ Verdict → 🔧 Remedy) into
-   the matching `findings-*.md`; write dismissed leads into `appendix-refuted.md`. Fill
+   `investigate` reuses a cached, scope-keyed partition (`.sherlock/units.json` for the
+   full repo, `.sherlock/units-<slug>.json` for a scoped path), runs `init` if the report
+   skeleton is missing, and prints an **Investigation Plan**: project stats, a recommended
+   execution mode, the token-cost ordering, a subscription caveat, the available lenses,
+   and the next-step instructions below. Read that plan.
+
+2. **Ask the user** (skip any answer already supplied as a flag):
+   1. **Mode** — present the recommendation and the cost/rigor ordering
+      `inline < agents < workflow`, plus the caveat that the skill cannot detect the
+      user's Claude Code plan.
+   2. **Lenses** — which lenses to apply (default: the full tier-resolved set).
+   3. **Tier-application** — *apply all selected lenses to every unit* (`all`) **or**
+      *follow tier-based applicability* (`strict`, the default — a lens runs only on units
+      whose tier is in its `applies_to.tiers`).
+
+3. **Execute the chosen mode:**
+   - **inline** — review each unit's files through each applicable lens directly, in this
+     conversation, producing candidate findings. For **each** candidate, dispatch one
+     **verifier subagent** (refute-by-default, single vote); keep confirmed/uncertain,
+     route refuted to the appendix. Cheapest; review is sequential, verification is
+     independent.
+   - **agents** — dispatch one **reviewer subagent per `(unit × applicable lens)`**
+     (parallel), then one **verifier subagent per candidate** (single vote); synthesize.
+   - **workflow** — run `${CLAUDE_PLUGIN_ROOT}/skills/sherlock/workflow/sherlock.workflow.js`
+     via the Workflow tool, passing `{ units, lenses, rules, date }` as `args` (read
+     `units` from the scope's units file). It fans out reviewers, runs **3-vote
+     adversarial panels**, and returns `{ kept, refuted, summary }`. Most thorough and
+     most token-intensive.
+
+4. **Write results** into the scaffolded report files, following the persona style guide
+   [`persona/report-style.md`](persona/report-style.md): the synthesized `summary` becomes
+   `INVESTIGATION.md` (🗂️ The Brief → 🧾 Evidence ledger → ⚖️ The Verdict); write each kept
+   finding as a case-file (Observation → 🧠 Deduction → ⚖️ Verdict → 🔧 Remedy) into the
+   matching `findings-*.md`; write dismissed leads into `appendix-refuted.md`. Fill
    `units-status.json`.
-4. **Reconcile coverage:**
-   ```bash
-   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js coverage --findings docs/reviews/<date>-codebase-review
-   ```
-   A non-zero exit means a unit was missed — do not call the review complete.
+
+5. **Reconcile coverage:** run the exact command printed in the plan —
+   `coverage --findings <report-dir>` (plus `--units .sherlock/units-<slug>.json` for a
+   scoped review). A non-zero exit means a unit was missed — do not call the review
+   complete.
 
 ## Invocation
-- `/sherlock` — whole repo, all applicable lenses.
-- `/sherlock <path-or-glob>` — scoped.
-- `/sherlock --lenses security,bugs` — only the named investigators.
+- `/sherlock` — whole repo; asks mode + lenses + tier-application.
+- `/sherlock <path-or-glob>` — scoped to a subtree.
+- `/sherlock --mode workflow --lenses security,bugs` — pre-answer the questions; flags are
+  forwarded to `investigate`.
 
 ## Extending
 Add an investigator: copy `lenses/_TEMPLATE.md` to `lenses/<name>.md`. Project-specific
@@ -49,4 +72,4 @@ invariants: set `rules.project` in `sherlock.config.yml` (never edit `rules/stan
 which stays general — see the design doc §6).
 
 ## CLI reference
-`partition` · `scaffold` · `coverage` · `lenses` · `rules` — run any with `--help`.
+`investigate` · `partition` · `init` · `coverage` · `lenses` · `rules` — run any with `--help`.
