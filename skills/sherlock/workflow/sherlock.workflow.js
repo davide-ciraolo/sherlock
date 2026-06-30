@@ -12,6 +12,7 @@ export const meta = {
 
 // args: { scope?: string, lenses?: string, date?: string }
 const CLI = '${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js'
+const STYLE = '${CLAUDE_PLUGIN_ROOT}/skills/sherlock/report-style.md'
 const FINDING = { type: 'object', required: ['id','lens','severity','file','line','excerpt','rationale','recommendation'],
   properties: { id:{type:'string'}, lens:{type:'string'}, severity:{type:'string',enum:['CRITICAL','HIGH','MEDIUM','LOW']},
     file:{type:'string'}, line:{type:'integer'}, excerpt:{type:'string'}, rationale:{type:'string'}, rule:{type:'string'}, recommendation:{type:'string'} } }
@@ -80,8 +81,13 @@ const all = perUnit.filter(Boolean).flatMap(u => u.verified)
 const kept = all.filter(f => f.verdict.verdict !== 'refuted')
 const refuted = all.filter(f => f.verdict.verdict === 'refuted')
 const summary = await agent(
+  `First read the Sherlock persona style guide at ${STYLE} and follow it.\n` +
   `Synthesize the final review report from these verified findings (JSON):\n${JSON.stringify(kept).slice(0, 200000)}\n` +
-  `Group by area and severity; write an executive summary with counts by severity × area and the top CRITICAL/HIGH items first.`,
+  `Write the INVESTIGATION.md summary in three sections: ` +
+  `"🗂️ The Brief" (scope, units, LOC, lines of inquiry, counts); ` +
+  `"🧾 Evidence ledger" — a table | severity | location | lead | verdict | with one row per kept finding, top CRITICAL/HIGH first; ` +
+  `and "⚖️ The Verdict" (counts of must-fix / to-review / dismissed plus the headline lead). ` +
+  `Use the canonical emoji legend (🔴🟠🟡🟢 severity; ✅🟡🚫 verdict). Keep it terse and technical.`,
   { label: 'synthesize', phase: 'Synthesize' },
 )
 log(`Sherlock: ${kept.length} findings kept, ${refuted.length} refuted`)
