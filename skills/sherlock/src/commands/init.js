@@ -1,7 +1,7 @@
 import { mkdir, writeFile, readFile } from "node:fs/promises";
 import path from "node:path";
 import { loadConfig } from "../config.js";
-import { flag } from "../args.js";
+import { flag, scopeArg } from "../args.js";
 import { unitsFileName, reportDirName } from "../paths.js";
 
 function today() {
@@ -13,7 +13,7 @@ export async function cmdInit({ cwd, args, stdout, stderr }) {
   const date = flag(args, "--date") || today();
   const out = flag(args, "--out") || config.output;
 
-  const scope = args.find((a, i) => !a.startsWith("--") && (i === 0 || !args[i - 1].startsWith("--")));
+  const scope = scopeArg(args);
 
   const unitsFile = unitsFileName(scope);
   let units;
