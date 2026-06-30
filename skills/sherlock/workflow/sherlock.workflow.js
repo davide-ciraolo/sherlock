@@ -81,13 +81,13 @@ const all = perUnit.filter(Boolean).flatMap(u => u.verified)
 const kept = all.filter(f => f.verdict.verdict !== 'refuted')
 const refuted = all.filter(f => f.verdict.verdict === 'refuted')
 const summary = await agent(
-  `First read the Sherlock persona style guide at ${STYLE} and follow it.\n` +
-  `Synthesize the final review report from these verified findings (JSON):\n${JSON.stringify(kept).slice(0, 200000)}\n` +
-  `Write the INVESTIGATION.md summary in three sections: ` +
+  `You are writing the final Sherlock review report. First read the persona style guide at ${STYLE} and follow it exactly — it defines the emoji palette, the investigation-arc structure, and the case-file format.\n` +
+  `Write the INVESTIGATION.md summary in three sections per the guide: ` +
   `"🗂️ The Brief" (scope, units, LOC, lines of inquiry, counts); ` +
   `"🧾 Evidence ledger" — a table | severity | location | lead | verdict | with one row per kept finding, top CRITICAL/HIGH first; ` +
   `and "⚖️ The Verdict" (counts of must-fix / to-review / dismissed plus the headline lead). ` +
-  `Use the canonical emoji legend (🔴🟠🟡🟢 severity; ✅🟡🚫 verdict). Keep it terse and technical.`,
+  `Keep it terse and technical.\n` +
+  `The verified findings to synthesize (JSON):\n${JSON.stringify(kept).slice(0, 200000)}`,
   { label: 'synthesize', phase: 'Synthesize' },
 )
 log(`Sherlock: ${kept.length} findings kept, ${refuted.length} refuted`)
