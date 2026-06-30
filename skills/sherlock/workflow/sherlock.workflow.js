@@ -12,7 +12,7 @@ export const meta = {
 
 // args: { scope?: string, lenses?: string, date?: string }
 const CLI = '${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js'
-const STYLE = '${CLAUDE_PLUGIN_ROOT}/skills/sherlock/report-style.md'
+const STYLE = '${CLAUDE_PLUGIN_ROOT}/skills/sherlock/persona/report-style.md'
 const FINDING = { type: 'object', required: ['id','lens','severity','file','line','excerpt','rationale','recommendation'],
   properties: { id:{type:'string'}, lens:{type:'string'}, severity:{type:'string',enum:['CRITICAL','HIGH','MEDIUM','LOW']},
     file:{type:'string'}, line:{type:'integer'}, excerpt:{type:'string'}, rationale:{type:'string'}, rule:{type:'string'}, recommendation:{type:'string'} } }

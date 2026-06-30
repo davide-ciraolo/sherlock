@@ -27,7 +27,7 @@ a **triaged report** under `docs/reviews/`. It changes no code.
    passing `{ units, lenses, rules, date }` as `args`. It fans out reviewers,
    adversarially verifies, and returns `{ kept, refuted, summary }`.
 3. **Write results** into the scaffolded report files, following the persona style
-   guide [`report-style.md`](report-style.md): the synthesized `summary` becomes
+   guide [`report-style.md`](persona/report-style.md): the synthesized `summary` becomes
    `INVESTIGATION.md` (🗂️ The Brief → 🧾 Evidence ledger → ⚖️ The Verdict); write each
    kept finding as a case-file (Observation → 🧠 Deduction → ⚖️ Verdict → 🔧 Remedy) into
    the matching `findings-*.md`; write dismissed leads into `appendix-refuted.md`. Fill
