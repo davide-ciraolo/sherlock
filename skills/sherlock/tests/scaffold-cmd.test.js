@@ -15,14 +15,27 @@ async function withUnits() {
   return root;
 }
 
-test("scaffold creates report skeleton + seeded coverage table", async () => {
+test("scaffold creates persona report skeleton + seeded coverage table", async () => {
   const root = await withUnits();
   const code = await cmdScaffold({ cwd: root, args: ["--date", "2026-06-29"], stdout: { write() {} }, stderr: { write() {} } });
   assert.equal(code, 0);
   const dir = path.join(root, "docs/reviews/2026-06-29-codebase-review");
-  for (const f of ["README.md", "findings-security.md", "findings-bugs.md", "findings-cleanup.md", "appendix-refuted.md", "coverage.md", "units-status.json"]) {
+  for (const f of ["INVESTIGATION.md", "findings-security.md", "findings-bugs.md", "findings-cleanup.md", "appendix-refuted.md", "coverage.md", "units-status.json"]) {
     await readFile(path.join(dir, f), "utf8");
   }
+  // README.md must no longer be produced
+  await assert.rejects(readFile(path.join(dir, "README.md"), "utf8"), /ENOENT/);
+
+  const investigation = await readFile(path.join(dir, "INVESTIGATION.md"), "utf8");
+  assert.ok(investigation.includes("🕵️"), "header mark");
+  assert.ok(investigation.includes("🔴"), "severity legend");
+  assert.ok(investigation.includes("The Brief"));
+  assert.ok(investigation.includes("Evidence ledger"));
+  assert.ok(investigation.includes("The Verdict"));
+
+  const refuted = await readFile(path.join(dir, "appendix-refuted.md"), "utf8");
+  assert.ok(refuted.includes("Dismissed leads"));
+
   const coverage = await readFile(path.join(dir, "coverage.md"), "utf8");
   assert.ok(coverage.includes("api-src-auth"));
   assert.ok(coverage.includes("| S |"));

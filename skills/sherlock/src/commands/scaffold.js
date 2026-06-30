@@ -31,11 +31,19 @@ export async function cmdScaffold({ cwd, args, stdout, stderr }) {
     .join("\n");
   const coverage = `# Coverage\n\n| Unit | Tier | LOC | Lenses run | Status |\n|---|---|---|---|---|\n${rows}\n`;
 
-  await writeFile(path.join(dir, "README.md"), `# Codebase Review — ${date}\n\n_Executive summary populated at synthesis._\n`);
-  await writeFile(path.join(dir, "findings-security.md"), "# Security findings\n\n_None yet._\n");
-  await writeFile(path.join(dir, "findings-bugs.md"), "# Correctness / bug findings\n\n_None yet._\n");
-  await writeFile(path.join(dir, "findings-cleanup.md"), "# Cleanup findings (dead code / comments / refactor)\n\n_None yet._\n");
-  await writeFile(path.join(dir, "appendix-refuted.md"), "# Refuted candidates\n\n_None yet._\n");
+  const LEGEND = "🔴 critical · 🟠 high · 🟡 medium · 🟢 low — verdicts: ✅ confirmed · 🟡 uncertain · 🚫 dismissed";
+
+  await writeFile(
+    path.join(dir, "INVESTIGATION.md"),
+    `# 🕵️ Codebase Review — ${date}\n\n> ${LEGEND}\n\n` +
+      `## 🗂️ The Brief\n\n_Scope, units, LOC, lines of inquiry, and counts — populated at synthesis._\n\n` +
+      `## 🧾 Evidence ledger\n\n| | Location | Lead | Verdict |\n|---|---|---|---|\n\n_Populated at synthesis._\n\n` +
+      `## ⚖️ The Verdict\n\n_Must-fix / to-review / dismissed summary — populated at synthesis._\n`,
+  );
+  await writeFile(path.join(dir, "findings-security.md"), "# 🧾 Security — Evidence\n\n_No confirmed leads yet._\n");
+  await writeFile(path.join(dir, "findings-bugs.md"), "# 🧾 Correctness — Evidence\n\n_No confirmed leads yet._\n");
+  await writeFile(path.join(dir, "findings-cleanup.md"), "# 🧾 Cleanup — Evidence (dead code · comments · refactor)\n\n_No confirmed leads yet._\n");
+  await writeFile(path.join(dir, "appendix-refuted.md"), "# 🚫 Dismissed leads\n\n_None yet._\n");
   await writeFile(path.join(dir, "coverage.md"), coverage);
   await writeFile(path.join(dir, "units-status.json"), JSON.stringify({ units: {} }, null, 2));
 
