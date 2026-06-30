@@ -17,19 +17,19 @@ a **triaged report** under `docs/reviews/`. It changes no code.
 
 1. **Partition + scaffold (deterministic CLI):**
    ```bash
-   node .claude/skills/sherlock/bin/cli.js partition [path-or-glob]
-   node .claude/skills/sherlock/bin/cli.js scaffold
-   node .claude/skills/sherlock/bin/cli.js rules
-   node .claude/skills/sherlock/bin/cli.js lenses [--select security,bugs,...]
+   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js partition [path-or-glob]
+   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js scaffold
+   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js rules
+   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js lenses [--select security,bugs,...]
    ```
    Read `.sherlock/units.json` and the resolved lens + rule context.
-2. **Run the workflow** `workflow/sherlock.workflow.js` via the Workflow tool,
+2. **Run the workflow** `${CLAUDE_PLUGIN_ROOT}/skills/sherlock/workflow/sherlock.workflow.js` via the Workflow tool,
    passing `{ units, lenses, rules, date }` as `args`. It fans out reviewers,
    adversarially verifies, and returns `{ kept, refuted, summary }`.
 3. **Write results** into the scaffolded report files; fill `units-status.json`.
 4. **Reconcile coverage:**
    ```bash
-   node .claude/skills/sherlock/bin/cli.js coverage --findings docs/reviews/<date>-codebase-review
+   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js coverage --findings docs/reviews/<date>-codebase-review
    ```
    A non-zero exit means a unit was missed — do not call the review complete.
 

@@ -15,8 +15,8 @@ Commands:
   rules                            print resolved standard + project rule context
 
 Examples:
-  node .claude/skills/sherlock/bin/cli.js partition
-  node .claude/skills/sherlock/bin/cli.js lenses --select security,bugs
+  node \${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js partition
+  node \${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js lenses --select security,bugs
 `;
 
 const HANDLERS = { partition: cmdPartition, scaffold: cmdScaffold, coverage: cmdCoverage, lenses: cmdLenses, rules: cmdRules };

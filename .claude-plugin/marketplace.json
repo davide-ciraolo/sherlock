@@ -1,0 +1,22 @@
+{
+  "name": "sherlock",
+  "owner": {
+    "name": "davide-ciraolo",
+    "url": "https://github.com/davide-ciraolo"
+  },
+  "metadata": {
+    "description": "Risk-tiered code investigation with adversarial verification and a triaged findings report",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "sherlock",
+      "source": "./",
+      "description": "Risk-tiered code investigation: run perspective lenses (security, correctness, dead-code, comments, refactor) with adversarial verification and produce a triaged findings report. No code changes.",
+      "version": "0.1.0",
+      "license": "MIT",
+      "homepage": "https://github.com/davide-ciraolo/sherlock",
+      "keywords": ["code-review", "audit", "security", "static-analysis", "lenses"]
+    }
+  ]
+}

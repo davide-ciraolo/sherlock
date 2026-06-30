@@ -11,7 +11,7 @@ export const meta = {
 }
 
 // args: { scope?: string, lenses?: string, date?: string }
-const CLI = '.claude/skills/sherlock/bin/cli.js'
+const CLI = '${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js'
 const FINDING = { type: 'object', required: ['id','lens','severity','file','line','excerpt','rationale','recommendation'],
   properties: { id:{type:'string'}, lens:{type:'string'}, severity:{type:'string',enum:['CRITICAL','HIGH','MEDIUM','LOW']},
     file:{type:'string'}, line:{type:'integer'}, excerpt:{type:'string'}, rationale:{type:'string'}, rule:{type:'string'}, recommendation:{type:'string'} } }
@@ -21,10 +21,10 @@ const VERDICT = { type: 'object', required: ['verdict','reason'], properties: { 
 phase('Partition')
 log('Sherlock: partitioning + scaffolding (deterministic CLI)')
 // The orchestrator (you) runs these Bash steps before/within the workflow:
-//   node .claude/skills/sherlock/bin/cli.js partition <scope>
-//   node .claude/skills/sherlock/bin/cli.js scaffold --date <date>
-//   node .claude/skills/sherlock/bin/cli.js rules        (resolve rule context)
-//   node .claude/skills/sherlock/bin/cli.js lenses --select <lenses>
+//   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js partition <scope>
+//   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js scaffold --date <date>
+//   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js rules        (resolve rule context)
+//   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js lenses --select <lenses>
 // units.json, the resolved lens set, and the rule context are passed via args.
 const units = args?.units || []
 const lenses = args?.lenses || []        // resolved Lens objects (name, verification_class, applies_to, severity_default)
