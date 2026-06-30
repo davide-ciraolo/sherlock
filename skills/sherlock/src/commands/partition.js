@@ -5,6 +5,7 @@ import { walkFiles } from "../glob.js";
 import { countLines } from "../loc.js";
 import { assignTier } from "../tiers.js";
 import { kebab } from "../kebab.js";
+import { unitsFileName } from "../paths.js";
 
 const TIER_RANK = { B: 0, A: 1, S: 2 };
 
@@ -67,7 +68,7 @@ export async function cmdPartition({ cwd, args, stdout }) {
 
   const stateDir = path.join(cwd, config.stateDir);
   await mkdir(stateDir, { recursive: true });
-  await writeFile(path.join(stateDir, "units.json"), JSON.stringify({ units }, null, 2));
+  await writeFile(path.join(stateDir, unitsFileName(scope)), JSON.stringify({ units }, null, 2));
   stdout.write(`partitioned ${files.length} files into ${units.length} units\n`);
   return 0;
 }
