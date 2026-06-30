@@ -1,4 +1,7 @@
-<h1 align="center">sherlock</h1>
+<h1 align="center">
+  <img src="assets/logo.png" alt="" width="360" /><br/>
+  sherlock
+</h1>
 
 <p align="center"><em>Risk-tiered code investigation: perspective lenses + adversarial verification → a triaged findings report. No code changes.</em></p>
 
