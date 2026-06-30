@@ -26,7 +26,12 @@ a **triaged report** under `docs/reviews/`. It changes no code.
 2. **Run the workflow** `${CLAUDE_PLUGIN_ROOT}/skills/sherlock/workflow/sherlock.workflow.js` via the Workflow tool,
    passing `{ units, lenses, rules, date }` as `args`. It fans out reviewers,
    adversarially verifies, and returns `{ kept, refuted, summary }`.
-3. **Write results** into the scaffolded report files; fill `units-status.json`.
+3. **Write results** into the scaffolded report files, following the persona style
+   guide [`report-style.md`](report-style.md): the synthesized `summary` becomes
+   `INVESTIGATION.md` (🗂️ The Brief → 🧾 Evidence ledger → ⚖️ The Verdict); write each
+   kept finding as a case-file (Observation → 🧠 Deduction → ⚖️ Verdict → 🔧 Remedy) into
+   the matching `findings-*.md`; write dismissed leads into `appendix-refuted.md`. Fill
+   `units-status.json`.
 4. **Reconcile coverage:**
    ```bash
    node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js coverage --findings docs/reviews/<date>-codebase-review
