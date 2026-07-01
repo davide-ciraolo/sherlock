@@ -8,7 +8,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"/></a>
   <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg" alt="Node >=18"/>
-  <img src="https://img.shields.io/badge/tests-63%20passing-brightgreen.svg" alt="63 tests passing"/>
+  <img src="https://img.shields.io/badge/tests-76%20passing-brightgreen.svg" alt="76 tests passing"/>
 </p>
 
 ---
@@ -53,7 +53,7 @@ sherlock/                          # repo root = the plugin
     ├── rules/standard/            # shipped GENERAL invariants only (portable)
     ├── schemas/                   # finding / verdict / units JSON schemas
     ├── workflow/sherlock.workflow.js   # fan-out → adversarial verify → synthesize
-    ├── tests/                     # 63 tests (node:test)
+    ├── tests/                     # 76 tests (node:test)
     └── docs/                      # design doc + implementation plan
 ```
 
@@ -140,6 +140,7 @@ Claude reads `SKILL.md` and drives the investigate flow (it recommends and asks 
 ```bash
 CLI="${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js"   # or .claude/skills/sherlock/bin/cli.js when vendored
 node "$CLI" investigate [path-or-glob]   # reuse-first prep + recommend a mode; prints the plan Claude follows
+                                          # (first run in a repo with no config: drafts a tailored sherlock.config.yml + stops to refine)
 node "$CLI" partition [path-or-glob]     # repo → risk-tiered .sherlock/units.json (scope-keyed: units-<hash>-<name>.json)
 node "$CLI" init                         # create the report dir + coverage table (findings files written fresh at synthesis)
 node "$CLI" rules                        # resolve standard ∪ project rule overlay
@@ -154,7 +155,7 @@ node "$CLI" coverage --findings docs/reviews/<date>-codebase-review   # non-zero
 
 | Command | Purpose |
 |---|---|
-| `investigate [path-or-glob] [--mode …] [--lenses …] [--tiers strict\|all] [--refresh]` | Reuse-first prep (partition + init), recommend an execution mode from project structure, and print the Investigation Plan + next-step instructions Claude follows. |
+| `investigate [path-or-glob] [--mode …] [--lenses …] [--tiers strict\|all] [--refresh]` | Reuse-first prep (partition + init), recommend an execution mode from project structure, and print the Investigation Plan + next-step instructions Claude follows. On the **first run in a repo with no `sherlock.config.yml`**, it instead drafts a tailored config from the file tree (risk tiers derived from directory names) and stops so you can refine the `S`/`A` globs before partitioning; re-run to proceed. |
 | `partition [path-or-glob] [--config <file>]` | Walk the target into cohesive review units (≤ ~2k LOC each; oversized dirs bin-packed into sub-units), assign a default risk tier per unit from tier-glob heuristics + config, write `.sherlock/units.json` (or `.sherlock/units-<hash>-<name>.json` for a scoped run; the units file records the `scope` and each unit's real `path`). |
 | `init [--date YYYY-MM-DD] [--out <dir>] [path]` | Create `<out>/<date>-<slug>-review/` (full repo → `<date>-codebase-review/`; scoped → `<date>-<hash>-<name>-review/`) with a coverage table seeded from the scope's units file. Findings files (`INVESTIGATION.md`, `findings-*.md`, `appendix-refuted.md`, `units-status.json`) are **not** scaffolded — Claude writes them fresh at synthesis. |
 | `lenses [--select security,bugs,...]` | List available lenses; with `--select`, validate the requested subset (friendly aliases like `bugs`→`correctness`) and print the resolved set. |
@@ -234,7 +235,7 @@ all lenses apply, output `docs/reviews`, standard exclude list.
 
 ```bash
 cd skills/sherlock
-npm test          # node --test tests/**/*.test.js — 63 tests
+npm test          # node --test tests/**/*.test.js — 76 tests
 ```
 
 Tests cover the deterministic core: partition (units, oversized-dir splitting, tier assignment), lens template conformance + `--select` resolution, rule layering (standard-only never absorbs a project rule; overlay wins on conflict), and coverage gap detection + exit codes. The LLM phases (review/verify/synthesize) are exercised by live runs, not unit tests.
