@@ -8,7 +8,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"/></a>
   <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg" alt="Node >=18"/>
-  <img src="https://img.shields.io/badge/tests-55%20passing-brightgreen.svg" alt="55 tests passing"/>
+  <img src="https://img.shields.io/badge/tests-63%20passing-brightgreen.svg" alt="63 tests passing"/>
 </p>
 
 ---
@@ -16,7 +16,7 @@
 Sherlock reviews a codebase — whole or scoped — through a set of **investigators**, each a single *perspective* ("lens") on the code: security, correctness, dead-code, comments, refactor. Every candidate finding is **adversarially verified** before it lands, and the result is a **triaged report** under `docs/reviews/`. It changes no code.
 
 A **hybrid CLI + LLM skill**:
-- The Node CLI does the deterministic work: partitioning the repo into risk-tiered review units, initialising the report skeleton, resolving the lens set and rule overlay, and reconciling coverage so no unit is silently skipped.
+- The Node CLI does the deterministic work: partitioning the repo into risk-tiered review units, initialising the report directory + coverage table, resolving the lens set and rule overlay, and reconciling coverage so no unit is silently skipped.
 - Claude does the judgment work the CLI can't: reading code through each lens, refuting candidate findings, and synthesizing the report.
 
 It complements static tooling (linters, type-checkers) — it does **not** replace it. Sherlock chases logic bugs, security reasoning, dead-code reachability, and refactor opportunities that static tools miss.
@@ -53,7 +53,7 @@ sherlock/                          # repo root = the plugin
     ├── rules/standard/            # shipped GENERAL invariants only (portable)
     ├── schemas/                   # finding / verdict / units JSON schemas
     ├── workflow/sherlock.workflow.js   # fan-out → adversarial verify → synthesize
-    ├── tests/                     # 55 tests (node:test)
+    ├── tests/                     # 63 tests (node:test)
     └── docs/                      # design doc + implementation plan
 ```
 
@@ -62,7 +62,7 @@ When a review runs, the host project gets:
 ```text
 <project>/
 ├── .sherlock/                     # internal state (units.json, …) — gitignore this
-└── docs/reviews/<date>-codebase-review/   # the triaged report (configurable)
+└── docs/reviews/<date>-codebase-review/   # the triaged report (scoped runs: <date>-<hash>-<name>-review)
 ```
 
 ---
@@ -140,8 +140,8 @@ Claude reads `SKILL.md` and drives the investigate flow (it recommends and asks 
 ```bash
 CLI="${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js"   # or .claude/skills/sherlock/bin/cli.js when vendored
 node "$CLI" investigate [path-or-glob]   # reuse-first prep + recommend a mode; prints the plan Claude follows
-node "$CLI" partition [path-or-glob]     # repo → risk-tiered .sherlock/units.json (scope-keyed: units-<slug>.json)
-node "$CLI" init                         # create the report skeleton + coverage table
+node "$CLI" partition [path-or-glob]     # repo → risk-tiered .sherlock/units.json (scope-keyed: units-<hash>-<name>.json)
+node "$CLI" init                         # create the report dir + coverage table (findings files written fresh at synthesis)
 node "$CLI" rules                        # resolve standard ∪ project rule overlay
 node "$CLI" lenses --select security,bugs   # list / validate the lens selection
 # ... run the chosen mode: inline / agents / workflow ...
@@ -155,8 +155,8 @@ node "$CLI" coverage --findings docs/reviews/<date>-codebase-review   # non-zero
 | Command | Purpose |
 |---|---|
 | `investigate [path-or-glob] [--mode …] [--lenses …] [--tiers strict\|all] [--refresh]` | Reuse-first prep (partition + init), recommend an execution mode from project structure, and print the Investigation Plan + next-step instructions Claude follows. |
-| `partition [path-or-glob] [--config <file>]` | Walk the target into cohesive review units (≤ ~2k LOC each; oversized dirs bin-packed into sub-units), assign a default risk tier per unit from tier-glob heuristics + config, write `.sherlock/units.json` (or `.sherlock/units-<slug>.json` for a scoped run). |
-| `init [--date YYYY-MM-DD] [--out <dir>] [path]` | Create `<out>/<date>-<scope>-review/` (full repo → `<date>-codebase-review/`) with the report skeleton and a coverage table seeded from the scope's units file. |
+| `partition [path-or-glob] [--config <file>]` | Walk the target into cohesive review units (≤ ~2k LOC each; oversized dirs bin-packed into sub-units), assign a default risk tier per unit from tier-glob heuristics + config, write `.sherlock/units.json` (or `.sherlock/units-<hash>-<name>.json` for a scoped run; the units file records the `scope` and each unit's real `path`). |
+| `init [--date YYYY-MM-DD] [--out <dir>] [path]` | Create `<out>/<date>-<slug>-review/` (full repo → `<date>-codebase-review/`; scoped → `<date>-<hash>-<name>-review/`) with a coverage table seeded from the scope's units file. Findings files (`INVESTIGATION.md`, `findings-*.md`, `appendix-refuted.md`, `units-status.json`) are **not** scaffolded — Claude writes them fresh at synthesis. |
 | `lenses [--select security,bugs,...]` | List available lenses; with `--select`, validate the requested subset (friendly aliases like `bugs`→`correctness`) and print the resolved set. |
 | `rules [--config <file>]` | Resolve the effective rule context: shipped standard pack ∪ explicitly-configured project overlay, and print which files feed which lenses. |
 | `coverage --findings <report-dir> [--units <file>]` | Reconcile recorded findings against `units.json`; exit non-zero and list any unit with no status (gap) or an error status. |
@@ -169,7 +169,7 @@ Run any command with `--help`.
 
 The `workflow` execution mode is a four-phase pipeline (`workflow/sherlock.workflow.js`); the lighter `inline` and `agents` modes run the same review/verify shape with fewer agents:
 
-0. **Partition (deterministic).** `partition` + `init` build `units.json` and the report skeleton; the resolved lens set and rule context are loaded.
+0. **Partition (deterministic).** `partition` + `init` build `units.json` and the report dir + coverage table; the resolved lens set and rule context are loaded.
 1. **Review (fan-out).** One reviewer agent per `(unit × applicable lens)` — gated by lens `applies_to` ∩ selected lenses ∩ unit tier. Each agent gets the unit's files, the lens body, and the resolved rules; returns schema-validated candidate findings.
 2. **Verify (per-finding, no barrier).** Each candidate routes by its lens's `verification_class`:
    - `security` / `correctness` → a **3-vote adversarial panel** with distinct probes (reproduce · impact reachability · spec/rule conformance), each prompted to *refute by default*. `confirmed` if ≥2 say real; `uncertain` if split; otherwise `refuted` (dropped to an appendix).
@@ -228,7 +228,7 @@ Sane defaults when absent: tiers default to `B`, all lenses apply, output `docs/
 
 ```bash
 cd skills/sherlock
-npm test          # node --test tests/**/*.test.js — 55 tests
+npm test          # node --test tests/**/*.test.js — 63 tests
 ```
 
 Tests cover the deterministic core: partition (units, oversized-dir splitting, tier assignment), lens template conformance + `--select` resolution, rule layering (standard-only never absorbs a project rule; overlay wins on conflict), and coverage gap detection + exit codes. The LLM phases (review/verify/synthesize) are exercised by live runs, not unit tests.
