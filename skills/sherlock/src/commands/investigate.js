@@ -47,7 +47,7 @@ export async function cmdInvestigate({ cwd, args, stdout, stderr }) {
   } else {
     reused = true;
   }
-  if (!(await exists(path.join(reportDir, "INVESTIGATION.md")))) {
+  if (!(await exists(path.join(reportDir, "coverage.md")))) {
     const code = await cmdInit({
       cwd,
       args: [scope, "--date", date, "--out", out].filter(Boolean),
