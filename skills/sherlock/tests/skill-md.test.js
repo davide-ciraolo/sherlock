@@ -23,3 +23,9 @@ test("SKILL.md documents the three execution modes", async () => {
   const md = await readFile(path.join(root, "SKILL.md"), "utf8");
   for (const m of ["inline", "agents", "workflow"]) assert.ok(md.includes(m), `mentions ${m} mode`);
 });
+
+test("SKILL.md documents the first-run config bootstrap + refine loop", async () => {
+  const md = await readFile(path.join(root, "SKILL.md"), "utf8");
+  assert.ok(md.includes("sherlock.config.yml"), "names the config file");
+  assert.ok(/refine/i.test(md) && /tier/i.test(md), "explains refining tiers");
+});
