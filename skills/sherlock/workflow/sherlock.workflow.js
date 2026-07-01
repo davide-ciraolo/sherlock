@@ -3,7 +3,7 @@ export const meta = {
   name: 'sherlock',
   description: 'Risk-tiered code investigation: lenses → adversarial verify → triaged report',
   phases: [
-    { title: 'Partition', detail: 'CLI builds units.json + scaffolds report' },
+    { title: 'Partition', detail: 'CLI builds units file + coverage.md' },
     { title: 'Review', detail: 'one reviewer agent per (unit × applicable lens)' },
     { title: 'Verify', detail: 'adversarially refute each candidate finding' },
     { title: 'Synthesize', detail: 'dedupe, group, write report; reconcile coverage' },

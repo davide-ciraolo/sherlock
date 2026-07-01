@@ -20,7 +20,7 @@ It changes no code.
    node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js investigate [path-or-glob] [--mode …] [--lenses …] [--tiers strict|all] [--refresh]
    ```
    `investigate` reuses a cached, scope-keyed partition (`.sherlock/units.json` for the
-   full repo, `.sherlock/units-<slug>.json` for a scoped path), runs `init` if the report
+   full repo, `.sherlock/units-<slug>.json` for a scoped path (the `<slug>` is a short `"<hash>-<name>"` token, not the full path)), runs `init` if the report
    skeleton is missing, and prints an **Investigation Plan**: project stats, a recommended
    execution mode, the token-cost ordering, a subscription caveat, the available lenses,
    and the next-step instructions below. Read that plan.
