@@ -4,8 +4,7 @@ import { loadConfig } from "../config.js";
 import { walkFiles } from "../glob.js";
 import { countLines } from "../loc.js";
 import { assignTier } from "../tiers.js";
-import { kebab } from "../kebab.js";
-import { unitsFileName } from "../paths.js";
+import { scopeToken, unitsFileName } from "../paths.js";
 
 const TIER_RANK = { B: 0, A: 1, S: 2 };
 
@@ -24,7 +23,7 @@ function makeUnit(id, pathKey, members) {
 // the sorted file list into <=maxLoc chunks (a single over-cap file lands alone).
 function unitsForGroup(pathKey, members, maxLoc) {
   const total = members.reduce((n, m) => n + m.loc, 0);
-  if (total <= maxLoc) return [makeUnit(kebab(pathKey), pathKey, members)];
+  if (total <= maxLoc) return [makeUnit(scopeToken(pathKey), pathKey, members)];
 
   const sorted = [...members].sort((a, b) => a.rel.localeCompare(b.rel));
   const chunks = [];
@@ -40,8 +39,8 @@ function unitsForGroup(pathKey, members, maxLoc) {
     curLoc += m.loc;
   }
   if (cur.length) chunks.push(cur);
-  if (chunks.length === 1) return [makeUnit(kebab(pathKey), pathKey, chunks[0])];
-  return chunks.map((ms, i) => makeUnit(`${kebab(pathKey)}-${i + 1}`, pathKey, ms));
+  if (chunks.length === 1) return [makeUnit(scopeToken(pathKey), pathKey, chunks[0])];
+  return chunks.map((ms, i) => makeUnit(`${scopeToken(pathKey)}-${i + 1}`, pathKey, ms));
 }
 
 export async function cmdPartition({ cwd, args, stdout }) {
@@ -68,7 +67,10 @@ export async function cmdPartition({ cwd, args, stdout }) {
 
   const stateDir = path.join(cwd, config.stateDir);
   await mkdir(stateDir, { recursive: true });
-  await writeFile(path.join(stateDir, unitsFileName(scope)), JSON.stringify({ units }, null, 2));
+  await writeFile(
+    path.join(stateDir, unitsFileName(scope)),
+    JSON.stringify({ scope: scope ?? null, units }, null, 2),
+  );
   stdout.write(`partitioned ${files.length} files into ${units.length} units\n`);
   return 0;
 }
