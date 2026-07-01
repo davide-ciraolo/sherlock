@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { defaultConfig, loadConfig, validateConfig, CONFIG_FILENAME } from "../src/config.js";
+import { defaultConfig, loadConfig, validateConfig, CONFIG_FILENAME, configFileExists } from "../src/config.js";
+import { assignTier } from "../src/tiers.js";
 
 test("defaultConfig has output, tiers, exclude, maxUnitLoc", () => {
   const c = defaultConfig();
@@ -34,4 +35,19 @@ test("loadConfig merges user overrides", async () => {
 
 test("validateConfig rejects bad maxUnitLoc", () => {
   assert.throws(() => validateConfig({ ...defaultConfig(), maxUnitLoc: 0 }), /maxUnitLoc/);
+});
+
+test("default tiers classify auth→S, api→A, other→B", () => {
+  const c = defaultConfig();
+  assert.equal(assignTier("src/auth/login.ts", c.tiers), "S");
+  assert.equal(assignTier("services/api/users.ts", c.tiers), "A");
+  assert.equal(assignTier("src/util/str.ts", c.tiers), "B");
+});
+
+test("configFileExists detects yml/json presence", async () => {
+  const empty = await mkdtemp(path.join(tmpdir(), "sherlock-cfe-"));
+  assert.equal(await configFileExists(empty), false);
+  const withYml = await mkdtemp(path.join(tmpdir(), "sherlock-cfe-"));
+  await writeFile(path.join(withYml, "sherlock.config.yml"), "output: docs/reviews\n");
+  assert.equal(await configFileExists(withYml), true);
 });

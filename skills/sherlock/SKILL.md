@@ -25,6 +25,13 @@ It changes no code.
    execution mode, the token-cost ordering, a subscription caveat, the available lenses,
    and the next-step instructions below. Read that plan.
 
+   **First run in a repo (no `sherlock.config.yml`):** `investigate` instead drafts a
+   tailored `sherlock.config.yml` from the file tree (risk tiers derived from directory
+   names) and stops. **Refine it before proceeding:** review the `S`/`A` tier globs against
+   the project's real risk surface — add project-specific high-risk dirs, drop false
+   matches — then re-run the same `investigate` command to partition + plan. This happens
+   once; repos that already have a config skip straight to the plan.
+
 2. **Ask the user** (skip any answer already supplied as a flag):
    1. **Mode** — present the recommendation and the cost/rigor ordering
       `inline < agents < workflow`, plus the caveat that the skill cannot detect the

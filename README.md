@@ -220,7 +220,13 @@ Optional `sherlock.config.yml` (or `.json`) at the target repo root:
 }
 ```
 
-Sane defaults when absent: tiers default to `B`, all lenses apply, output `docs/reviews`, standard exclude list.
+Zero-config tiers are meaningful out of the box: the built-in defaults map common
+risk-bearing directory names to tiers (`**/auth/**`, `**/login/**`, … → **S**;
+`**/api/**`, `**/db/**`, `**/middleware/**`, … → **A**; everything else → **B**). On the
+first `investigate` in a repo with no `sherlock.config.yml`, the CLI **drafts** one tailored
+to your tree (tier globs only for risk keywords actually present) and stops so you can
+refine the `S`/`A` globs before the first partition. Other defaults when a key is absent:
+all lenses apply, output `docs/reviews`, standard exclude list.
 
 ---
 

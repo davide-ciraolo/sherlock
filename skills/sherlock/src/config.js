@@ -1,6 +1,7 @@
-import { readFile } from "node:fs/promises";
+import { readFile, access } from "node:fs/promises";
 import path from "node:path";
 import yaml from "js-yaml";
+import { keywordGlobs } from "./config-gen.js";
 
 export const CONFIG_FILENAME = "sherlock.config.yml";
 
@@ -32,8 +33,8 @@ export function defaultConfig() {
 
 function defaultTiersConfig() {
   return {
-    S: [],
-    A: ["**/ws/**", "**/streaming/**"],
+    S: keywordGlobs("S"),
+    A: keywordGlobs("A"),
     B: ["**"],
   };
 }
@@ -67,4 +68,16 @@ export async function loadConfig(projectRoot) {
     lensesByTier: { ...d.lensesByTier, ...(parsed.lensesByTier || {}) },
   };
   return validateConfig(merged);
+}
+
+export async function configFileExists(cwd) {
+  for (const name of ["sherlock.config.yml", "sherlock.config.json"]) {
+    try {
+      await access(path.join(cwd, name));
+      return true;
+    } catch {
+      // not present — keep checking
+    }
+  }
+  return false;
 }
