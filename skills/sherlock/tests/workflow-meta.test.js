@@ -22,3 +22,11 @@ test("synthesize prompt follows the report style guide", async () => {
     assert.ok(src.includes(s), `synthesize prompt names ${s}`);
   }
 });
+
+test("workflow never instructs an unscoped init (would scaffold the full-codebase folder)", async () => {
+  const src = await readFile(path.join(root, "workflow/sherlock.workflow.js"), "utf8");
+  // the old buggy comment ran `init --date <date>` with no scope
+  assert.ok(!/init --date/.test(src), "no unscoped `init --date` in the orchestration comment");
+  // any init reference must be scoped
+  assert.ok(!/cli\.js init\b(?! <scope>)/.test(src), "init references must carry <scope>");
+});
