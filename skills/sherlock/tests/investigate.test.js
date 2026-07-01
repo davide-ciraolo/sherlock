@@ -75,3 +75,35 @@ test("investigate does not re-init an existing report (guard on a file init writ
   const after = await readFile(covPath, "utf8");
   assert.ok(after.includes("SENTINEL"), "existing report must be reused, not re-initialized");
 });
+
+async function repoNoConfig() {
+  const root = await mkdtemp(path.join(tmpdir(), "sherlock-inv-nocfg-"));
+  await mkdir(path.join(root, "src/auth"), { recursive: true });
+  await mkdir(path.join(root, "src/api"), { recursive: true });
+  await writeFile(path.join(root, "src/auth/login.js"), "x\n".repeat(10));
+  await writeFile(path.join(root, "src/api/users.js"), "y\n".repeat(10));
+  // deliberately NO sherlock.config.yml
+  return root;
+}
+
+test("investigate bootstraps a tailored config and returns early when none exists", async () => {
+  const root = await repoNoConfig();
+  const { sink, stdout, stderr } = capture();
+  const code = await cmdInvestigate({ cwd: root, args: ["--date", "2026-06-30"], stdout, stderr });
+  assert.equal(code, 0);
+  await access(path.join(root, "sherlock.config.yml")); // drafted
+  assert.ok(sink.out.includes("Config Bootstrap"));
+  assert.ok(/refine/i.test(sink.out) && /re-run/i.test(sink.out));
+  // EARLY RETURN: no partition, no report
+  await assert.rejects(access(path.join(root, ".sherlock/units.json")), /ENOENT/);
+  await assert.rejects(access(path.join(root, "docs/reviews/2026-06-30-codebase-review/coverage.md")), /ENOENT/);
+});
+
+test("investigate does NOT bootstrap when a config already exists (proceeds to plan)", async () => {
+  const root = await repo(); // repo() writes a sherlock.config.yml
+  const { sink, stdout, stderr } = capture();
+  const code = await cmdInvestigate({ cwd: root, args: ["--date", "2026-06-30"], stdout, stderr });
+  assert.equal(code, 0);
+  assert.ok(!sink.out.includes("Config Bootstrap"), "no bootstrap when config present");
+  await access(path.join(root, ".sherlock/units.json")); // partitioned as normal
+});

@@ -1,11 +1,12 @@
 import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { loadConfig } from "../config.js";
+import { loadConfig, configFileExists } from "../config.js";
 import { flag, scopeArg } from "../args.js";
 import { unitsFileName, reportDirName, toPosix } from "../paths.js";
 import { recommendMode } from "../recommend.js";
 import { listLenses } from "../lenses.js";
+import { writeStarterConfig } from "../config-gen.js";
 import { cmdPartition } from "./partition.js";
 import { cmdInit } from "./init.js";
 import { today } from "../clock.js";
@@ -31,6 +32,29 @@ export async function cmdInvestigate({ cwd, args, stdout, stderr }) {
   const lensesSel = flag(args, "--lenses");
   const tiers = flag(args, "--tiers");
   const refresh = args.includes("--refresh");
+
+  // --- config bootstrap (first run in a repo) ---
+  // No config yet → draft tailored tiers from the tree and STOP, so Claude refines the
+  // S/A globs before any partition consumes them. Fires at most once per repo.
+  if (!(await configFileExists(cwd))) {
+    const boot = await writeStarterConfig(cwd, { include: config.include, exclude: config.exclude });
+    const rel = path.relative(cwd, boot.path) || "sherlock.config.yml";
+    stdout.write(
+      [
+        "# 🕵️ Sherlock — Config Bootstrap",
+        "",
+        `No sherlock.config.yml found — drafted one from your file tree at ${rel}.`,
+        `Tailored tiers: S=${boot.tiers?.S.length ?? 0} A=${boot.tiers?.A.length ?? 0} keyword-dirs matched (everything else → B).`,
+        "",
+        "## Next step — refine, then re-run",
+        "- Review sherlock.config.yml and refine the S/A tier globs to your real risk",
+        "  surface (add project-specific high-risk dirs, drop false matches).",
+        "- Then re-run investigate to partition + plan:",
+        `  node \${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js investigate${scope ? " " + scope : ""}`,
+      ].join("\n") + "\n",
+    );
+    return 0;
+  }
 
   const unitsRelNative = path.join(config.stateDir, unitsFileName(scope));
   const unitsPath = path.join(cwd, unitsRelNative);
