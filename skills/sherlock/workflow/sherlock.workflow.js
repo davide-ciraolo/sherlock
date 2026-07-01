@@ -12,7 +12,7 @@ export const meta = {
 
 // args: { scope?: string, lenses?: string, date?: string }
 const CLI = '${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js'
-const STYLE = '${CLAUDE_PLUGIN_ROOT}/skills/sherlock/persona/report-style.md'
+const STYLE = '${CLAUDE_PLUGIN_ROOT}/skills/sherlock/investigation/report-style.md'
 const FINDING = { type: 'object', required: ['id','lens','severity','file','line','excerpt','rationale','recommendation'],
   properties: { id:{type:'string'}, lens:{type:'string'}, severity:{type:'string',enum:['CRITICAL','HIGH','MEDIUM','LOW']},
     file:{type:'string'}, line:{type:'integer'}, excerpt:{type:'string'}, rationale:{type:'string'}, rule:{type:'string'}, recommendation:{type:'string'} } }
@@ -81,7 +81,7 @@ const all = perUnit.filter(Boolean).flatMap(u => u.verified)
 const kept = all.filter(f => f.verdict.verdict !== 'refuted')
 const refuted = all.filter(f => f.verdict.verdict === 'refuted')
 const summary = await agent(
-  `You are writing the final Sherlock review report. First read the persona style guide at ${STYLE} and follow it exactly — it defines the emoji palette, the investigation-arc structure, and the case-file format.\n` +
+  `You are writing the final Sherlock review report. First read the report style guide at ${STYLE} and follow it exactly — it defines the emoji palette, the investigation-arc structure, and the case-file format.\n` +
   `Write the INVESTIGATION.md summary in three sections per the guide: ` +
   `"🗂️ The Brief" (scope, units, LOC, lines of inquiry, counts); ` +
   `"🧾 Evidence ledger" — a table | severity | location | lead | verdict | with one row per kept finding, top CRITICAL/HIGH first; ` +

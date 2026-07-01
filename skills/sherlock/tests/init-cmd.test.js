@@ -15,7 +15,7 @@ async function withUnits() {
   return root;
 }
 
-test("scaffold creates persona report skeleton + seeded coverage table", async () => {
+test("init creates report skeleton + seeded coverage table", async () => {
   const root = await withUnits();
   const code = await cmdInit({ cwd: root, args: ["--date", "2026-06-29"], stdout: { write() {} }, stderr: { write() {} } });
   assert.equal(code, 0);
