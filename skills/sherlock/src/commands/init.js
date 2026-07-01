@@ -27,26 +27,15 @@ export async function cmdInit({ cwd, args, stdout, stderr }) {
   const dir = path.join(cwd, out, reportDirName(date, scope));
   await mkdir(dir, { recursive: true });
 
+  // coverage.md is the only file init writes. Claude never edits it, so there is no
+  // read-before-write friction. The content-bearing report files (INVESTIGATION.md,
+  // findings-*.md, appendix-refuted.md) and units-status.json are written fresh by
+  // Claude at synthesis — a Write on a non-existent file needs no prior Read.
   const rows = units
-    .map((u) => `| ${u.id} | ${u.tier} | ${u.loc} | | pending |`)
+    .map((u) => `| ${u.id} | ${u.path} | ${u.tier} | ${u.loc} | | pending |`)
     .join("\n");
-  const coverage = `# Coverage\n\n| Unit | Tier | LOC | Lenses run | Status |\n|---|---|---|---|---|\n${rows}\n`;
-
-  const LEGEND = "🔴 critical · 🟠 high · 🟡 medium · 🟢 low — verdicts: ✅ confirmed · 🟡 uncertain · 🚫 dismissed";
-
-  await writeFile(
-    path.join(dir, "INVESTIGATION.md"),
-    `# 🕵️ Codebase Review — ${date}\n\n> ${LEGEND}\n\n` +
-      `## 🗂️ The Brief\n\n_Scope, units, LOC, lines of inquiry, and counts — populated at synthesis._\n\n` +
-      `## 🧾 Evidence ledger\n\n| | Location | Lead | Verdict |\n|---|---|---|---|\n\n_Populated at synthesis._\n\n` +
-      `## ⚖️ The Verdict\n\n_Must-fix / to-review / dismissed summary — populated at synthesis._\n`,
-  );
-  await writeFile(path.join(dir, "findings-security.md"), "# 🧾 Security — Evidence\n\n_No confirmed leads yet._\n");
-  await writeFile(path.join(dir, "findings-bugs.md"), "# 🧾 Correctness — Evidence\n\n_No confirmed leads yet._\n");
-  await writeFile(path.join(dir, "findings-cleanup.md"), "# 🧾 Cleanup — Evidence (dead code · comments · refactor)\n\n_No confirmed leads yet._\n");
-  await writeFile(path.join(dir, "appendix-refuted.md"), "# 🚫 Dismissed leads\n\n_None yet._\n");
+  const coverage = `# Coverage\n\n| Unit | Path | Tier | LOC | Lenses run | Status |\n|---|---|---|---|---|---|\n${rows}\n`;
   await writeFile(path.join(dir, "coverage.md"), coverage);
-  await writeFile(path.join(dir, "units-status.json"), JSON.stringify({ units: {} }, null, 2));
 
   stdout.write(`initialized report at ${path.relative(cwd, dir)}\n`);
   return 0;

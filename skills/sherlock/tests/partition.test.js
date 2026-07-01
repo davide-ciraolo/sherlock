@@ -54,9 +54,33 @@ test("scoped partition writes a scope-keyed units file", async () => {
   const root = await repo();
   const code = await cmdPartition({ cwd: root, args: ["api/**"], stdout: { write() {} }, stderr: { write() {} } });
   assert.equal(code, 0);
-  // scoped file exists, keyed by kebab("api/**") === "api"
-  const scoped = JSON.parse(await readFile(path.join(root, ".sherlock/units-api.json"), "utf8"));
+  const { unitsFileName } = await import("../src/paths.js");
+  const scoped = JSON.parse(await readFile(path.join(root, ".sherlock", unitsFileName("api/**")), "utf8"));
   assert.ok(scoped.units.length >= 1);
   // the bare units.json must NOT be created by a scoped run
   await assert.rejects(readFile(path.join(root, ".sherlock/units.json"), "utf8"), /ENOENT/);
+});
+
+test("unit ids are short: <hash>-<name>, not the full kebab path", async () => {
+  const root = await repo();
+  const code = await cmdPartition({ cwd: root, args: [], stdout: { write() {} }, stderr: { write() {} } });
+  assert.equal(code, 0);
+  const units = JSON.parse(await readFile(path.join(root, ".sherlock/units.json"), "utf8")).units;
+  const auth = units.find((u) => u.path.includes("auth"));
+  // id ends with the readable basename and is prefixed by a 6-hex hash
+  assert.match(auth.id, /^[0-9a-f]{6}-auth$/);
+  // the old long form must NOT appear
+  assert.ok(!units.some((u) => u.id === "api-src-auth"), "no full-path kebab id");
+});
+
+test("units file records the scope (null for full codebase)", async () => {
+  const root = await repo();
+  await cmdPartition({ cwd: root, args: [], stdout: { write() {} }, stderr: { write() {} } });
+  const full = JSON.parse(await readFile(path.join(root, ".sherlock/units.json"), "utf8"));
+  assert.equal(full.scope, null);
+
+  await cmdPartition({ cwd: root, args: ["api/**"], stdout: { write() {} }, stderr: { write() {} } });
+  const { unitsFileName } = await import("../src/paths.js");
+  const scoped = JSON.parse(await readFile(path.join(root, ".sherlock", unitsFileName("api/**")), "utf8"));
+  assert.equal(scoped.scope, "api/**");
 });

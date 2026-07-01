@@ -20,7 +20,7 @@ It changes no code.
    node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js investigate [path-or-glob] [--mode …] [--lenses …] [--tiers strict|all] [--refresh]
    ```
    `investigate` reuses a cached, scope-keyed partition (`.sherlock/units.json` for the
-   full repo, `.sherlock/units-<slug>.json` for a scoped path), runs `init` if the report
+   full repo, `.sherlock/units-<slug>.json` for a scoped path (the `<slug>` is a short `"<hash>-<name>"` token, not the full path)), runs `init` if the report
    skeleton is missing, and prints an **Investigation Plan**: project stats, a recommended
    execution mode, the token-cost ordering, a subscription caveat, the available lenses,
    and the next-step instructions below. Read that plan.
@@ -47,13 +47,17 @@ It changes no code.
      `units` from the scope's units file). It fans out reviewers, runs **3-vote
      adversarial panels**, and returns `{ kept, refuted, summary }`. Most thorough and
      most token-intensive.
+     The scoped prep (partition + init) is already done by `investigate` — never run an
+     unscoped `init`, which would scaffold the full-codebase report folder.
 
-4. **Write results** into the scaffolded report files, following the report style guide
-   [`investigation/report-style.md`](investigation/report-style.md): the synthesized `summary` becomes
-   `INVESTIGATION.md` (🗂️ The Brief → 🧾 Evidence ledger → ⚖️ The Verdict); write each kept
-   finding as a case-file (Observation → 🧠 Deduction → ⚖️ Verdict → 🔧 Remedy) into the
-   matching `findings-*.md`; write dismissed leads into `appendix-refuted.md`. Fill
-   `units-status.json`.
+4. **Write results** into the report files, following the report style guide
+   [`investigation/report-style.md`](investigation/report-style.md). `init` scaffolds only
+   `coverage.md` — the content-bearing files do **not** exist yet, so **create each one
+   fresh with `Write`** (a `Write` on a non-existent file needs no prior `Read`): the
+   synthesized `summary` becomes `INVESTIGATION.md` (🗂️ The Brief → 🧾 Evidence ledger →
+   ⚖️ The Verdict); write each kept finding as a case-file (Observation → 🧠 Deduction →
+   ⚖️ Verdict → 🔧 Remedy) into the matching `findings-*.md`; write dismissed leads into
+   `appendix-refuted.md`; write `units-status.json` (before running `coverage`).
 
 5. **Reconcile coverage:** run the exact command printed in the plan —
    `coverage --findings <report-dir>` (plus `--units .sherlock/units-<slug>.json` for a

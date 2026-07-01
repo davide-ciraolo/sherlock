@@ -86,7 +86,7 @@ Partition output is **cached in `.sherlock/` and keyed by scope**, so a later re
 reuses it instead of re-walking the tree:
 
 - full codebase → `.sherlock/units.json`
-- a scoped path/glob → `.sherlock/units-<scope-slug>.json` (slug = `kebab(scope)`)
+- a scoped path/glob → `.sherlock/units-<scope-slug>.json` (slug = `<shorthash>-<name>`; see 2026-07-01-sherlock-short-slugs-scaffold-design.md)
 
 The **report dir** (`<out>/<date>-<scope-slug>-review`; full → `<date>-codebase-review`)
 holds only the report itself: `units-status.json`, `coverage.md`, `INVESTIGATION.md`,
@@ -218,7 +218,7 @@ to this flow.
 | `src/commands/coverage.js` | Add `--units <units-file>` flag (default `.sherlock/units.json`); still reads `units-status.json` from the report dir. |
 | `src/commands/investigate.js` (new) | `cmdInvestigate`: derive slug/units-path/report-dir, reuse-first prep, `--refresh`, plan output, recommendation, flag handling. |
 | `src/recommend.js` (new) | Pure `recommendMode(stats)` heuristic. |
-| `src/paths.js` (existing) | Add helpers: scope-keyed units-file name (`units.json` / `units-<slug>.json`) and report-dir name (`<date>-<slug>-review` / `<date>-codebase-review`), slug = `kebab(scope)`. |
+| `src/paths.js` (existing) | Add helpers: scope-keyed units-file name (`units.json` / `units-<slug>.json`) and report-dir name (`<date>-<slug>-review` / `<date>-codebase-review`), slug = `<shorthash>-<name>`; see 2026-07-01-sherlock-short-slugs-scaffold-design.md. |
 | `workflow/sherlock.workflow.js` | Comment: `scaffold`→`init`. (No logic change — units are passed via args, not read from disk.) |
 | `SKILL.md` | Rewrite procedure around `investigate` + the three per-mode sub-procedures + invocation; reads of the units file come from `.sherlock/` (scope-keyed). |
 | `README.md` | Update command list + flow description. |

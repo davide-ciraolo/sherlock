@@ -3,7 +3,7 @@ export const meta = {
   name: 'sherlock',
   description: 'Risk-tiered code investigation: lenses → adversarial verify → triaged report',
   phases: [
-    { title: 'Partition', detail: 'CLI builds units.json + scaffolds report' },
+    { title: 'Partition', detail: 'CLI builds units file + coverage.md' },
     { title: 'Review', detail: 'one reviewer agent per (unit × applicable lens)' },
     { title: 'Verify', detail: 'adversarially refute each candidate finding' },
     { title: 'Synthesize', detail: 'dedupe, group, write report; reconcile coverage' },
@@ -21,12 +21,15 @@ const VERDICT = { type: 'object', required: ['verdict','reason'], properties: { 
 
 phase('Partition')
 log('Sherlock: partitioning + scaffolding (deterministic CLI)')
-// The orchestrator (you) runs these Bash steps before/within the workflow:
+// `investigate <scope>` has ALREADY done the scoped prep (partition + init) before this
+// workflow runs — it wrote the scope-keyed units file and the scope-named report dir.
+// Do NOT run a bare `init` here: an unscoped init scaffolds the full-codebase report
+// folder alongside the scoped one. If you invoke the CLI manually, always pass the scope:
 //   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js partition <scope>
-//   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js init --date <date>
+//   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js init <scope> --date <date>
 //   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js rules        (resolve rule context)
 //   node ${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js lenses --select <lenses>
-// units.json, the resolved lens set, and the rule context are passed via args.
+// units (the resolved units array), the lens set, and the rule context are passed via args.
 const units = args?.units || []
 const lenses = args?.lenses || []        // resolved Lens objects (name, verification_class, applies_to, severity_default)
 const rules = args?.rules || { standard: [], projectGeneral: [], projectSpecific: [] }
