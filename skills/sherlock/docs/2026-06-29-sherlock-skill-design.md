@@ -197,8 +197,8 @@ The load-bearing distinction the user called out:
 - **Conflict rule:** when a project-overlay rule and a standard rule disagree, the
   **project overlay wins** (the repo knows its own constraints).
 
-This is exactly why the furiosa campaign (companion spec) wires
-`.claude/rules/furiosa/*` in **as an explicit project overlay** — those invariants
+This is exactly why a project review campaign wires its own
+`.claude/rules/<project>/*` in **as an explicit project overlay** — those invariants
 *should* drive that review — while sherlock's shipped standard pack never absorbs them.
 
 ---
@@ -250,10 +250,10 @@ applicable to each unit's tier.
 ```jsonc
 {
   "output": "docs/reviews",          // where reports land
-  "rules": { "project": [".claude/rules/furiosa"] },  // explicit project overlay
+  "rules": { "project": [".claude/rules/project"] },  // explicit project overlay
   "tiers": {                          // override default tier-glob heuristics
-    "S": ["api/src/auth/**", "api/src/workspace/**", "..."],
-    "A": ["**/ws/**", "**/streaming/**"],
+    "S": ["src/auth/**", "src/billing/**", "..."],
+    "A": ["**/api/**", "**/streaming/**"],
     "B": ["**"]
   },
   "lensesByTier": { "S": ["*"], "A": ["security","correctness","dead-code","refactor"], "B": ["correctness","dead-code","comments","refactor"] },

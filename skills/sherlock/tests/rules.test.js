@@ -7,7 +7,7 @@ import { resolveRules, GENERAL_BUCKETS } from "../src/rules.js";
 
 async function repo() {
   const root = await mkdtemp(path.join(tmpdir(), "sherlock-rules-"));
-  for (const b of ["common", "python", "typescript", "furiosa"]) {
+  for (const b of ["common", "python", "typescript", "project"]) {
     await mkdir(path.join(root, ".claude/rules", b), { recursive: true });
     await writeFile(path.join(root, ".claude/rules", b, "r.md"), `# ${b}\n`);
   }
@@ -17,17 +17,17 @@ async function repo() {
   return { root, skill };
 }
 
-test("standard is general-only; furiosa never auto-included", async () => {
+test("standard is general-only; project-specific bucket never auto-included", async () => {
   const { root, skill } = await repo();
   const r = await resolveRules(root, { rules: { project: [] } }, skill);
   assert.ok(r.standard.some((f) => f.includes("owasp.md")));
   assert.ok(r.projectGeneral.every((f) => GENERAL_BUCKETS.some((b) => f.includes(`/${b}/`))));
-  assert.ok(!r.projectGeneral.some((f) => f.includes("/furiosa/")));
+  assert.ok(!r.projectGeneral.some((f) => f.includes("/project/")));
   assert.deepEqual(r.projectSpecific, []);
 });
 
-test("furiosa enters projectSpecific only when explicitly configured", async () => {
+test("project-specific bucket enters projectSpecific only when explicitly configured", async () => {
   const { root, skill } = await repo();
-  const r = await resolveRules(root, { rules: { project: [".claude/rules/furiosa"] } }, skill);
-  assert.ok(r.projectSpecific.some((f) => f.includes("/furiosa/r.md")));
+  const r = await resolveRules(root, { rules: { project: [".claude/rules/project"] } }, skill);
+  assert.ok(r.projectSpecific.some((f) => f.includes("/project/r.md")));
 });

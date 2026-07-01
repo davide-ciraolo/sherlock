@@ -24,11 +24,11 @@ test("loadConfig merges user overrides", async () => {
   const root = await mkdtemp(path.join(tmpdir(), "sherlock-cfg-"));
   await writeFile(
     path.join(root, CONFIG_FILENAME),
-    'output: docs/audits\nrules:\n  project:\n    - .claude/rules/furiosa\n',
+    'output: docs/audits\nrules:\n  project:\n    - .claude/rules/project\n',
   );
   const c = await loadConfig(root);
   assert.equal(c.output, "docs/audits");
-  assert.deepEqual(c.rules.project, [".claude/rules/furiosa"]);
+  assert.deepEqual(c.rules.project, [".claude/rules/project"]);
   assert.ok(c.tiers.B, "defaults still present after merge");
 });
 

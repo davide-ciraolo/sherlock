@@ -346,11 +346,11 @@ test("loadConfig merges user overrides", async () => {
   const root = await mkdtemp(path.join(tmpdir(), "sherlock-cfg-"));
   await writeFile(
     path.join(root, CONFIG_FILENAME),
-    'output: docs/audits\nrules:\n  project:\n    - .claude/rules/furiosa\n',
+    'output: docs/audits\nrules:\n  project:\n    - .claude/rules/project\n',
   );
   const c = await loadConfig(root);
   assert.equal(c.output, "docs/audits");
-  assert.deepEqual(c.rules.project, [".claude/rules/furiosa"]);
+  assert.deepEqual(c.rules.project, [".claude/rules/project"]);
   assert.ok(c.tiers.B, "defaults still present after merge");
 });
 
@@ -1029,7 +1029,7 @@ git commit -m "feat(sherlock): lens discovery, validation, --select resolution"
 - Create: `.claude/skills/sherlock/src/commands/rules.js`
 - Test: `.claude/skills/sherlock/tests/rules.test.js`
 
-Behaviour (spec §6): `standard` = every file under the skill's `rules/standard/`. `projectGeneral` = auto-discovered files under the **general buckets only** (`common/`, `python/`, `typescript/`) of the target repo's `.claude/rules/`. `projectSpecific` = files under the paths **explicitly listed** in `config.rules.project` — never auto-scraped. Guarantees: a `.claude/rules/furiosa/*` file is in `projectSpecific` *only* if `config.rules.project` names it; it never leaks into `projectGeneral` or `standard`.
+Behaviour (spec §6): `standard` = every file under the skill's `rules/standard/`. `projectGeneral` = auto-discovered files under the **general buckets only** (`common/`, `python/`, `typescript/`) of the target repo's `.claude/rules/`. `projectSpecific` = files under the paths **explicitly listed** in `config.rules.project` — never auto-scraped. Guarantees: a `.claude/rules/project/*` file is in `projectSpecific` *only* if `config.rules.project` names it; it never leaks into `projectGeneral` or `standard`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -1044,7 +1044,7 @@ import { resolveRules, GENERAL_BUCKETS } from "../src/rules.js";
 
 async function repo() {
   const root = await mkdtemp(path.join(tmpdir(), "sherlock-rules-"));
-  for (const b of ["common", "python", "typescript", "furiosa"]) {
+  for (const b of ["common", "python", "typescript", "project"]) {
     await mkdir(path.join(root, ".claude/rules", b), { recursive: true });
     await writeFile(path.join(root, ".claude/rules", b, "r.md"), `# ${b}\n`);
   }
@@ -1054,19 +1054,19 @@ async function repo() {
   return { root, skill };
 }
 
-test("standard is general-only; furiosa never auto-included", async () => {
+test("standard is general-only; project-specific bucket never auto-included", async () => {
   const { root, skill } = await repo();
   const r = await resolveRules(root, { rules: { project: [] } }, skill);
   assert.ok(r.standard.some((f) => f.includes("owasp.md")));
   assert.ok(r.projectGeneral.every((f) => GENERAL_BUCKETS.some((b) => f.includes(`/${b}/`))));
-  assert.ok(!r.projectGeneral.some((f) => f.includes("/furiosa/")));
+  assert.ok(!r.projectGeneral.some((f) => f.includes("/project/")));
   assert.deepEqual(r.projectSpecific, []);
 });
 
-test("furiosa enters projectSpecific only when explicitly configured", async () => {
+test("project-specific bucket enters projectSpecific only when explicitly configured", async () => {
   const { root, skill } = await repo();
-  const r = await resolveRules(root, { rules: { project: [".claude/rules/furiosa"] } }, skill);
-  assert.ok(r.projectSpecific.some((f) => f.includes("/furiosa/r.md")));
+  const r = await resolveRules(root, { rules: { project: [".claude/rules/project"] } }, skill);
+  assert.ok(r.projectSpecific.some((f) => f.includes("/project/r.md")));
 });
 ```
 
@@ -1683,7 +1683,7 @@ test("standard pack has the three general rule files", async () => {
 });
 
 test("standard pack contains no project-specific terms", async () => {
-  const banned = /furiosa|coordinator|svc_token|path-jail|pi thread|tenant/i;
+  const banned = /coordinator|svc_token|path-jail|pi thread|tenant/i;
   for (const f of await readdir(dir)) {
     if (!f.endsWith(".md")) continue;
     const text = await readFile(path.join(dir, f), "utf8");
@@ -2041,7 +2041,7 @@ git commit -m "docs(sherlock): SKILL.md entry point + README"
 **Files:**
 - None created — this is a verification task on the real repo.
 
-- [ ] **Step 1: Add the furiosa project overlay config**
+- [ ] **Step 1: Add the project overlay config**
 
 Create `sherlock.config.yml` at the repo root:
 
@@ -2050,38 +2050,14 @@ Create `sherlock.config.yml` at the repo root:
 output: docs/reviews
 rules:
   project:
-    - .claude/rules/furiosa
+    - .claude/rules/project
 tiers:
   S:
-    - "api/src/auth/**"
-    - "api/src/workspace/**"
-    - "api/src/routes/**"
-    - "api/src/mcp/**"
-    - "api/src/voice/**"
-    - "api/src/sessions/**"
-    - "api/src/tasks/**"
-    - "api/src/agents/**"
-    - "api/src/messages/**"
-    - "api/src/memory/**"
-    - "api/src/models/**"
-    - "agents/src/coordinator/**"
-    - "agents/src/coordinator-pool.ts"
-    - "agents/src/http/**"
-    - "agents/src/tools/**"
-    - "agents/src/middleware/**"
-    - "agents/src/worker-*.ts"
-    - "agents/src/agent-respawn.ts"
-    - "agents/src/protocol/**"
+    - "src/auth/**"
+    - "src/billing/**"
   A:
-    - "api/src/ws/**"
-    - "api/src/observability/**"
-    - "frontend/src/ws/**"
-    - "frontend/src/streaming/**"
-    - "frontend/src/store/**"
-    - "frontend/src/voice/**"
-    - "agents/src/completion/**"
-    - "agents/src/persistence/**"
-    - "agents/src/redis/**"
+    - "**/api/**"
+    - "**/streaming/**"
   B:
     - "**"
 ```
@@ -2095,18 +2071,18 @@ node .claude/skills/sherlock/bin/cli.js rules
 node .claude/skills/sherlock/bin/cli.js lenses
 node .claude/skills/sherlock/bin/cli.js scaffold --date 2026-06-29
 ```
-Expected: `.sherlock/units.json` lists ~30–50 units; `rules` shows the furiosa overlay under project-specific and common/python/typescript under project-general; `scaffold` creates `docs/reviews/2026-06-29-codebase-review/` with a seeded `coverage.md`.
+Expected: `.sherlock/units.json` lists the repo's units; `rules` shows the project overlay under project-specific and common/python/typescript under project-general; `scaffold` creates `docs/reviews/2026-06-29-codebase-review/` with a seeded `coverage.md`.
 
 - [ ] **Step 3: Sanity-check the partition**
 
 Run: `node -e "const u=require('./.sherlock/units.json');const t={};for(const x of u.units)t[x.tier]=(t[x.tier]||0)+1;console.log(t)"`
-Expected: counts in all three tiers; S includes auth/workspace/coordinator units.
+Expected: counts in all three tiers; S includes the high-risk units named in the config.
 
 - [ ] **Step 4: Commit the config (campaign execution is separate)**
 
 ```bash
 git add sherlock.config.yml
-git commit -m "chore(sherlock): furiosa project overlay config for the review campaign"
+git commit -m "chore(sherlock): project overlay config for the review campaign"
 ```
 
 > The actual multi-agent review run (Phase 1–3 producing findings) is the
@@ -2143,7 +2119,7 @@ authoritative version**; Task 6's code block above already reflects FU1.
   "split oversized group by a deeper segment" was a no-op because every file in a
   group already shares one directory. Replaced with `unitsForGroup(...)` that
   bin-packs an over-`maxUnitLoc` directory's sorted file list into `<kebab>-1`,
-  `<kebab>-2`, … sub-units (a single over-cap file lands alone). On furiosa this
+  `<kebab>-2`, … sub-units (a single over-cap file lands alone). On the reference repo this
   took the partition from ~10 oversized units to **0** (78 units total). New test
   covers the split branch.
 - **FU2 — verdict schema alignment** (`schemas/verdict.schema.json`): dropped

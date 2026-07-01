@@ -13,7 +13,7 @@ test("standard pack has the three general rule files", async () => {
 });
 
 test("standard pack contains no project-specific terms", async () => {
-  const banned = /furiosa|coordinator|svc_token|path-jail|pi thread|tenant/i;
+  const banned = /coordinator|svc_token|path-jail|pi thread|tenant/i;
   for (const f of await readdir(dir)) {
     if (!f.endsWith(".md")) continue;
     const text = await readFile(path.join(dir, f), "utf8");

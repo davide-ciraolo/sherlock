@@ -14,7 +14,7 @@
 
 ## Working directory & conventions
 
-- **Package dir** (run all `node`/`npm`/test commands here): `<repo>/skills/sherlock/` where `<repo>` = `c:/Users/Public/digitiamo/furiosa/.claude/skills/sherlock`. All file paths below are **relative to this package dir**.
+- **Package dir** (run all `node`/`npm`/test commands here): `<repo>/skills/sherlock/` where `<repo>` = the sherlock checkout root. All file paths below are **relative to this package dir**.
 - **Git** runs from anywhere in the repo; `git add` paths are written repo-relative (`skills/sherlock/...`). Commits are pre-authorized per the chosen branch.
 - **Run one test file:** `node --test tests/<file>.test.js`
 - **Run all tests:** `npm test`
