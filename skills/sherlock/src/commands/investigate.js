@@ -94,7 +94,7 @@ export async function cmdInvestigate({ cwd, args, stdout, stderr }) {
   lines.push(mode ? `- Mode: ${mode} (provided).` : "- Ask the user to choose a mode (show the recommendation + cost ordering + plan caveat above).");
   lines.push(lensesSel ? `- Lenses: ${lensesSel} (provided).` : "- Ask the user which lenses to apply (default: full tier-resolved set).");
   lines.push(tiers ? `- Tier-application: ${tiers} (provided).` : "- Ask the user: apply all selected lenses to every unit ('all') or follow tier-based applicability ('strict', default).");
-  lines.push(`- Execute the chosen mode per SKILL.md, write the persona report into ${reportRel}, then run:`);
+  lines.push(`- Execute the chosen mode per SKILL.md, write the report into ${reportRel}, then run:`);
   lines.push(`  node \${CLAUDE_PLUGIN_ROOT}/skills/sherlock/bin/cli.js ${coverageCmd}`);
 
   stdout.write(lines.join("\n") + "\n");

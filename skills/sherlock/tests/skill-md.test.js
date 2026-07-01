@@ -13,7 +13,7 @@ test("SKILL.md has frontmatter name + description and the token-cost warning", a
   for (const c of ["partition", "init", "coverage", "lenses", "rules", "investigate"]) assert.ok(md.includes(c));
 });
 
-test("SKILL.md write-up step references the persona + INVESTIGATION.md", async () => {
+test("SKILL.md write-up step references the report style guide + INVESTIGATION.md", async () => {
   const md = await readFile(path.join(root, "SKILL.md"), "utf8");
   assert.ok(md.includes("INVESTIGATION.md"), "names the summary file");
   assert.ok(md.includes("report-style.md"), "points at the style guide");

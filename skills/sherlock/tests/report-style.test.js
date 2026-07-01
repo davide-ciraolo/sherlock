@@ -6,8 +6,8 @@ import { fileURLToPath } from "node:url";
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
-test("report-style.md ships the canonical persona palette and arc", async () => {
-  const md = await readFile(path.join(root, "persona", "report-style.md"), "utf8");
+test("report-style.md ships the canonical palette and arc", async () => {
+  const md = await readFile(path.join(root, "investigation", "report-style.md"), "utf8");
   // severity + verdict emoji
   for (const e of ["🔴", "🟠", "🟡", "🟢", "✅", "🚫"]) {
     assert.ok(md.includes(e), `palette must include ${e}`);

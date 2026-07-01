@@ -1,6 +1,6 @@
 # Sherlock — Report Style Guide
 
-The persona that shapes how a review **reads**. Voice lives here and in the
+The house style that shapes how a review **reads**. Voice lives here and in the
 synthesis/write step only — never in reviewer or verifier prompts.
 
 ## Voice

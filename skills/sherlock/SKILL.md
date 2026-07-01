@@ -48,8 +48,8 @@ It changes no code.
      adversarial panels**, and returns `{ kept, refuted, summary }`. Most thorough and
      most token-intensive.
 
-4. **Write results** into the scaffolded report files, following the persona style guide
-   [`persona/report-style.md`](persona/report-style.md): the synthesized `summary` becomes
+4. **Write results** into the scaffolded report files, following the report style guide
+   [`investigation/report-style.md`](investigation/report-style.md): the synthesized `summary` becomes
    `INVESTIGATION.md` (🗂️ The Brief → 🧾 Evidence ledger → ⚖️ The Verdict); write each kept
    finding as a case-file (Observation → 🧠 Deduction → ⚖️ Verdict → 🔧 Remedy) into the
    matching `findings-*.md`; write dismissed leads into `appendix-refuted.md`. Fill
