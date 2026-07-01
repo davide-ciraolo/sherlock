@@ -46,15 +46,19 @@ N must-fix before merge · M to review · K dismissed. One-line headline lead.
 
 ## The case-file — `findings-{security,bugs,cleanup}.md`
 
-Each kept finding is a self-contained dossier. The four lines map 1:1 onto the
-existing `FINDING` schema, so no schema change is needed:
+Each kept finding is a self-contained dossier. The four bullets map 1:1 onto the
+existing `FINDING` schema, so no schema change is needed. Write each finding as a
+`####` heading followed by a **bulleted list** — bullets render as hard breaks in
+every markdown viewer, whereas bare newlines collapse into one line under
+CommonMark-strict renderers (e.g. some macOS previewers). **Never** emit the four
+lines as plain consecutive lines separated only by a single newline.
 
-```
-🔴 CRITICAL · <file>:<line>
-  Observation: <excerpt + what is wrong>          (FINDING.excerpt)
-  🧠 Deduction: <reachability / impact reasoning>  (FINDING.rationale)
-  ⚖️ Verdict: confirmed (3/3 panel)                (FINDING.verdict + vote)
-  🔧 Remedy: <recommendation>                       (FINDING.recommendation)
+```markdown
+#### 🔴 CRITICAL · <file>:<line>
+- **Observation:** <excerpt + what is wrong>          (FINDING.excerpt)
+- **🧠 Deduction:** <reachability / impact reasoning>  (FINDING.rationale)
+- **⚖️ Verdict:** confirmed (3/3 panel)                (FINDING.verdict + vote)
+- **🔧 Remedy:** <recommendation>                       (FINDING.recommendation)
 ```
 
 ## Dismissed leads — `appendix-refuted.md`
